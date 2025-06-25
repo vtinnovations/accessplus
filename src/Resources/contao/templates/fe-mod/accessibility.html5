@@ -1,0 +1,526 @@
+
+<?php if(!(Contao\Input::cookie('disableAccessibility') == 1)): ?>
+<?php if($this->accessibilitySettings['enable_accessibility']): ?>
+    <?php if($this->accessibilitiesLicence == "SUCCESS") :?>
+    
+    <div class="upk-dynamic-design-changer">
+        <button id="accessibility-trigger-button" class="mdp-icon-position-before" data-backgroungColor="#<?= $this->objRootPage->backgroundColor ?>">
+            <span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 293.05 349.63">
+                    <path
+                        d="M95.37,51.29a51.23,51.23,0,1,1,51.29,51.16h-.07A51.19,51.19,0,0,1,95.37,51.29ZM293,134.59A25.61,25.61,0,0,0,265.49,111h-.13l-89.64,8c-3.06.28-6.13.42-9.19.42H126.65q-4.59,0-9.16-.41L27.7,111a25.58,25.58,0,0,0-4.23,51l.22,0,72.45,6.56a8.55,8.55,0,0,1,7.77,8.48v19.62a33.82,33.82,0,0,1-2.36,12.45L60.48,313.66a25.61,25.61,0,1,0,46.85,20.71h0l39.14-95.61L186,334.63A25.61,25.61,0,0,0,232.86,314L191.63,209.14a34.14,34.14,0,0,1-2.35-12.44V177.09a8.55,8.55,0,0,1,7.77-8.49l72.33-6.55A25.61,25.61,0,0,0,293,134.59Z">
+                    </path>
+                </svg>
+            </span>
+        </button>
+    </div>
+    <div id="accessibility-popup-box"
+        class="accessibility-modal-animation-fade accessibility-modal-fixed accessibility-modal-shadow" aria-hidden="false"
+        data-nosnippet="">
+            <div id="accessibility-popup" role="dialog" aria-modal="true" aria-labelledby="accessibility-popup-box"
+                style="transition: top 0.3s ease 0s, left 0.3s ease 0s;">
+                <div class="accessibility-border-box">
+                <section id="accessibility-popup-header">
+                    <h3><?= $GLOBALS['TL_LANG']['CTE']['accessibility'] ?></h3>
+                    <button id="accessibility-popup-close"
+                        aria-label="Schließen Sie das Bedienfeld „Barrierefreiheit“."></button>
+                </section>
+                <section id="accessibility-popup-main">
+                    <div class="accessibility-w-50">
+                        <div class="accessibility-subheader mr-0">
+                            <h4><?= $GLOBALS['TL_LANG']['CTE']['accessibility_modes'] ?></h4>
+                        </div>
+                        <div id="accessibility-accessibility-profiles-box">
+                            <?php if($this->accessibilitySettings['epilepsy']): ?>                           
+                                <div id="accessibility-accessibility-profile-epilepsy"
+                                    class="accessibility-accessibility-profile-item" tabindex="0">
+                                    <div class="accessibility-row">
+                                        <div class="accessibility-switch-box">
+                                            <label class="access-switch">
+                                                <?= $GLOBALS['TL_LANG']['CTE']['epilepsy_safe_mode'] ?> <input type="checkbox"
+                                                    name="accessibility-accessibility-profile-epilepsy" value="on"
+                                                    tabindex="-1">
+                                                <span class="access-slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="accessibility-title-box">
+                                            <div class="accessibility-profile-title"><?= $GLOBALS['TL_LANG']['CTE']['epilepsy_safe_mode'] ?></div>
+                                            <div class="accessibility-profile-short"><?= $GLOBALS['TL_LANG']['CTE']['epilepsy_text'] ?></div>
+                                        </div>
+                                    </div>
+                                    <div class="accessibility-profile-description">
+                                        <?= $GLOBALS['TL_LANG']['CTE']['epilepsy_on_text'] ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if($this->accessibilitySettings['visually_impaired']): ?>   
+                                <div id="accessibility-accessibility-profile-visually-impaired"
+                                    class="accessibility-accessibility-profile-item" tabindex="0">
+                                    <div class="accessibility-row">
+                                        <div class="accessibility-switch-box">
+                                            <label class="access-switch">
+                                                <?= $GLOBALS['TL_LANG']['CTE']['visually_impaired_mode'] ?> <input type="checkbox"
+                                                    name="accessibility-accessibility-profile-visually-impaired" value="on"
+                                                    tabindex="-1">
+                                                <span class="access-slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="accessibility-title-box">
+                                            <div class="accessibility-profile-title"><?= $GLOBALS['TL_LANG']['CTE']['visually_impaired_mode'] ?></div>
+                                            <div class="accessibility-profile-short">
+                                            <?= $GLOBALS['TL_LANG']['CTE']['visually_impaired_text'] ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accessibility-profile-description">
+                                    <?= $GLOBALS['TL_LANG']['CTE']['visually_impaired_on_text'] ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if($this->accessibilitySettings['cognitive_disability']): ?>
+                                <div id="accessibility-accessibility-profile-cognitive-disability"
+                                    class="accessibility-accessibility-profile-item" tabindex="0">
+                                    <div class="accessibility-row">
+                                        <div class="accessibility-switch-box">
+                                            <label class="access-switch">
+                                                <?= $GLOBALS['TL_LANG']['CTE']['cognitive_disability_mode'] ?> <input type="checkbox"
+                                                    name="accessibility-accessibility-profile-cognitive-disability" value="on"
+                                                    tabindex="-1">
+                                                <span class="access-slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="accessibility-title-box">
+                                            <div class="accessibility-profile-title"><?= $GLOBALS['TL_LANG']['CTE']['cognitive_disability_mode'] ?></div>
+                                            <div class="accessibility-profile-short"><?= $GLOBALS['TL_LANG']['CTE']['cognitive_disability_text'] ?></div>
+                                        </div>
+                                    </div>
+                                    <div class="accessibility-profile-description">
+                                    <?= $GLOBALS['TL_LANG']['CTE']['cognitive_disability_on_text'] ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['ADHD_friendly_mode']): ?>
+                                <div id="accessibility-accessibility-profile-ADHD-friendly"
+                                    class="accessibility-accessibility-profile-item" tabindex="0">
+                                    <div class="accessibility-row">
+                                        <div class="accessibility-switch-box">
+                                            <label class="access-switch">
+                                                <?= $GLOBALS['TL_LANG']['CTE']['adhd_mode'] ?><input type="checkbox"
+                                                    name="accessibility-accessibility-profile-ADHD-friendly" value="on"
+                                                    tabindex="-1">
+                                                <span class="access-slider"></span>
+                                            </label>
+                                        </div>
+                                        <div class="accessibility-title-box">
+                                            <div class="accessibility-profile-title"><?= $GLOBALS['TL_LANG']['CTE']['adhd_mode'] ?></div>
+                                            <div class="accessibility-profile-short"><?= $GLOBALS['TL_LANG']['CTE']['adhd_text'] ?></div>
+                                        </div>
+                                    </div>
+                                    <div class="accessibility-profile-description">
+                                        <?= $GLOBALS['TL_LANG']['CTE']['adhd_on_text'] ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <?php if($this->accessibilitySettings['online_dictionary']):?>
+                            <div id="accessibility-online-dictionary" class="accessibility-subheader">
+                                <h4><?= $GLOBALS['TL_LANG']['CTE']['online_dictionary'] ?></h4>
+                                <div class="accessibility-online-dictionary-input">
+                                    <img src="/bundles/accessplus/images/wikipedia.svg" alt="wikipedia" class="dictionary-input-field-wikipedia">
+                                    <input type="text" name="accessibility-online-dictionary" placeholder="<?= $GLOBALS['TL_LANG']['CTE']['online_dictionary_placeholder'] ?>" class="dictionary-input-field" id="accessibility-online-dictionary">
+                                    <img id="clear-input-dictionary" src="/bundles/accessplus/images/cross.svg" alt="cross" class="dictionary-input-field-cross">
+                                </div>
+                                <div id="accessibility-online-dictionary-result">
+                                    
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                        <div class="accessibility-subheader">
+                            <h4><?= $GLOBALS['TL_LANG']['CTE']['simple_orientation'] ?></h4>
+                        </div>
+                        <div class="accessibility-visually-pleasing-experience-box">
+                            <?php //$contrasts = explode(',', $this->accessibilitySettings->contrast);
+                                $contrasts = $this->accessibilitySettings['contrast']; ?>
+                            <?php if(!empty($contrasts)): ?>
+                            <?php foreach($contrasts as $contrast): ?>
+                            <div id="accessibility-action-<?= $contrast; ?>-contrast"
+                                class="accessibility-action-box accessibility-toggle-box" tabindex="0"
+                                data-contrast="<?= $contrast; ?>">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-icon"></span>
+                                    <span class="accessibility-title">
+                                        <?= $GLOBALS['TL_LANG']['CTE'][$contrast]; ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+
+                            <?php if($this->accessibilitySettings['animation']): ?>
+                            <div id="accessibility-action-stop-animations"
+                                class="accessibility-action-box accessibility-toggle-box" tabindex="0">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-icon"></span>
+                                    <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['stop_animation'] ?></span>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+
+                            <?php if($this->accessibilitySettings['mute_sound']): ?>
+                            <div id="accessibility-action-mute-sounds"
+                                class="accessibility-action-box accessibility-toggle-box" tabindex="0">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-icon"></span>
+                                    <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['mute_sounds'] ?></span>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            <?php $cursors = $this->accessibilitySettings['big_cursor']; ?>
+                            <?php if(!empty($cursors)): ?>
+                            <?php foreach($cursors as $cursor): ?>
+                            <div id="accessibility-action-big-<?= strtolower($cursor); ?>-cursor"
+                                class="accessibility-action-box accessibility-toggle-box" tabindex="0">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-icon"></span>
+                                    <span class="accessibility-title">
+                                        <?= $GLOBALS['TL_LANG']['CTE']['cursor_' . $cursor]; ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['hide_images']): ?>
+                            <div id="accessibility-action-hide-images"
+                                class="accessibility-action-box accessibility-toggle-box" tabindex="0">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-icon"></span>
+                                    <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['hide_images'] ?></span>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['enable_underline']): ?>
+                            <div id="accessibility-action-reading-guide"
+                                class="accessibility-action-box accessibility-toggle-box mdp-active" tabindex="0">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-icon"></span>
+                                    <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['reading_aid'] ?></span>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['reading_mask']): ?>
+                            <div id="accessibility-action-reading-mask"
+                                class="accessibility-action-box accessibility-toggle-box" tabindex="0">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-icon"></span>
+                                    <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['reading_mask'] ?></span>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['text_to_speech']): ?>
+                            <div id="accessibility-action-text-to-speech"
+                                class="accessibility-action-box accessibility-toggle-box" tabindex="0">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-icon"></span>
+                                    <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['text_to_speech'] ?></span>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['cognitive_reading']): ?>
+                                <div id="accessibility-action-cognitive-reading" class="accessibility-action-box accessibility-toggle-box" tabindex="0" role="button">
+                                    <div class="accessibility-action-box-content">
+                                        <span class="accessibility-icon"></span>
+                                        <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['cognitive_reading'] ?></span>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['keyboard_navigation']): ?>
+                                <div id="accessibility-action-keyboard-navigation" class="accessibility-action-box accessibility-toggle-box" tabindex="0" role="button">
+                                    <div class="accessibility-action-box-content">
+                                        <span class="accessibility-icon"></span>
+                                        <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['keyboard_navigation'] ?></span>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['high_contrast']): ?>
+                                <div id="accessibility-action-high-contrast" class="accessibility-action-box accessibility-toggle-box" tabindex="0" role="button">
+                                    <div class="accessibility-action-box-content">
+                                        <span class="accessibility-icon"></span>
+                                        <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['high_contrast'] ?></span>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['black_white']): ?>
+                                <div id="accessibility-action-black-and-white" class="accessibility-action-box accessibility-toggle-box" tabindex="0" role="button">
+                                    <div class="accessibility-action-box-content">
+                                        <span class="accessibility-icon"></span>
+                                        <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['black_white'] ?></span>
+                                    </div>
+                                </div> 
+                            <?php endif; ?>  
+                        </div>
+                    </div>
+                    <div class="accessibility-w-50">
+                        <div class="accessibility-subheader ml-0 pl-32">
+                            <h4><?= $GLOBALS['TL_LANG']['CTE']['readable_experience'] ?></h4>
+                        </div>
+                        <div id="accessibility-readable-experience-box">    
+                            <?php if($this->accessibilitySettings['content_scalling']):?>
+                                <div id="accessibility-content-scaling" class="accessibility-action-box accessibility-spinner-box">
+                                    <div class="accessibility-action-box-content">
+                                        <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['content_scaling'] ?></span>
+                                    </div>
+                                    <div class="accessibility-input-spinner-box">
+                                        <div class="accessibility-control">
+                                            <button id="increase-content-scaling" class="accessibility-plus" role="button" aria-label="Increase content size"></button>
+                                            <div id="scale-display-content-scaling" class="accessibility-value">default</div>
+                                            <button id="decrease-content-scaling" class="accessibility-minus" role="button" aria-label="Reduce content size"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['textlupe']): ?>
+                                <div id="accessibility-action-text-magnifier" class="accessibility-action-box accessibility-spinner-box" tabindex="0" role="button">
+                                    <div class="accessibility-action-box-content">
+                                        <span class="accessibility-icon"></span>
+                                        <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['text_magnifier'] ?></span>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="accessibility-visually-pleasing-experience-box">
+                            <?php $textFonts = $this->accessibilitySettings['text_font']; ?>
+                            <?php if(!empty($textFonts)): ?>
+                            <?php $count = 0; ?>
+                            <?php foreach($textFonts as $textFont): ?>
+                            <div id="accessibility-action-<?= $textFont ?>-font"
+                                class="accessibility-action-box accessibility-toggle-box" tabindex="0">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-icon"></span>
+                                    <span class="accessibility-title">
+                                        <?= $count > 0 ? $GLOBALS['TL_LANG']['CTE']['dyslexia_friendly'] : $GLOBALS['TL_LANG']['CTE']['readable'] ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <?php $count++; ?>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+
+                            <?php $highlights = $this->accessibilitySettings['highlight']; ?>
+                            <?php if(!empty($highlights)): ?>
+                            <?php foreach($highlights as $highlight): ?>
+                            <div id="accessibility-action-highlight-<?= $highlight ?>"
+                                class="accessibility-action-box accessibility-toggle-box" tabindex="0"
+                                data-highlight="<?= $highlight ?>">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-icon"></span>
+                                    <span class="accessibility-title">
+                                        <?= $GLOBALS['TL_LANG']['CTE'][$highlight]?>
+                                    </span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                        <div id="accessibility-readable-experience-box">    
+                            <?php if($this->accessibilitySettings['font_size']): ?>
+                                <div id="accessibility-fontsize-adjuster" class="accessibility-action-box accessibility-spinner-box accessibility-fontsize-adjuster accessibility-action-box">
+                                    <div class="accessibility-action-box-content">
+                                        <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['font_size'] ?></span>
+                                    </div>
+                                    <div class="accessibility-input-spinner-box" data-step="5">
+                                        <div class="accessibility-control accessibility-fontsize-adjuster-controls">
+                                            <button id="increase-fontsize-adjuster" class="accessibility-plus" tabindex="0" aria-label="Increase font size"></button>
+                                            <div id="scale-display-fontsize-adjuster" class="accessibility-value" data-value="0">default</div>
+                                            <button id="decrease-fontsize-adjuster" class="accessibility-minus" role="button"  aria-label="Decrease font size"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['line_height']): ?>
+                                <div id="accessibility-line-height-adjuster" class="accessibility-action-box accessibility-spinner-box">
+                                    <div class="accessibility-action-box-content">
+                                        <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['line_height'] ?></span>
+                                    </div>
+                                    <div class="accessibility-input-spinner-box" data-step="5">
+                                        <div class="accessibility-control">
+                                            <button id="increase-line-height-adjuster" class="accessibility-plus" role="button" tabindex="0" aria-label="Increase line height"></button>
+                                            <div id="scale-display-line-height-adjuster" class="accessibility-value">default</div>
+                                            <button id="decrease-line-height-adjuster" class="accessibility-minus" role="button" tabindex="0" aria-label="Decrease line height"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['letter_spacing']): ?>
+                                <div id="accessibility-letter-spacing-adjuster" class="accessibility-action-box accessibility-spinner-box">
+                                    <div class="accessibility-action-box-content">
+                                        <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['letter_spacing'] ?></span>
+                                    </div>
+                                    <div class="accessibility-input-spinner-box">
+                                        <div class="accessibility-control">
+                                            <button id="increase-letter-spacing-adjuster" class="accessibility-plus" role="button" aria-label="Increase in letter space"></button>
+                                            <div id="scale-display-letter-spacing-adjuster" class="accessibility-value">default</div>
+                                            <button id="decrease-letter-spacing-adjuster" class="accessibility-minus" role="button" aria-label="Reduce letter space"></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                            <?php if($this->accessibilitySettings['link_navigator']): ?>
+                                <div id="accessibility-action-useful-links" class="accessibility-action-box accessibility-useful-links-box">
+                                    <div class="accessibility-action-box-content">
+                                        <label for="useful-links" class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['link_navigator'] ?></label>
+                                        <div class="accessibility-select-box">
+                                            <select id="useful-links" aria-label="usefull links" autocomplete="on">
+                                                <option selected="" disabled="" value="mdp-default"><?= $GLOBALS['TL_LANG']['CTE']['choose_an_option'] ?></option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <div class="accessibility-visually-pleasing-experience-box">
+                            <?php if($this->accessibilitySettings['highlight_focus']):?>
+                                <div id="accessibility-action-highlight-focus" class="accessibility-action-box accessibility-toggle-box" tabindex="0">
+                                    <div class="accessibility-action-box-content">
+                                        <span class="accessibility-icon"></span>
+                                        <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['highlight_focus'] ?></span>
+                                    </div>
+                                </div>
+                           <?php endif; ?>
+                            <?php if($this->accessibilitySettings['mark_hover']): ?>
+                                <div id="accessibility-action-highlight-hover" class="accessibility-action-box accessibility-toggle-box" tabindex="0">
+                                    <div class="accessibility-action-box-content">
+                                        <span class="accessibility-icon"></span>
+                                        <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['mark_hover'] ?></span>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="accessibility-visually-pleasing-experience-box">
+                            <?php $alignments = $this->accessibilitySettings['alignment']; ?>
+                            <?php if(!empty($alignments)): ?>
+                            <?php foreach($alignments as $alignment): ?>
+                            <div id="accessibility-action-align-<?= $alignment; ?>"
+                                class="accessibility-action-box accessibility-toggle-box" tabindex="0"
+                                data-align="<?= $alignment; ?>">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-icon"></span>
+                                    <span class="accessibility-title">
+                                        <?= $GLOBALS['TL_LANG']['CTE'][$alignment]; ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <?php endforeach; ?>
+                            <?php endif; ?>
+                            <?php $headlineColors = $this->accessibilitySettings['accessibility_all_text']; ?>
+                            <?php if(!empty($headlineColors)): ?>
+                            <div id="accessibility-action-alltext-colors"
+                                class="accessibility-action-box accessibility-palette-box">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['all_text_color'] ?></span>
+                                    <div class="accessibility-color-box">
+                                        <?php foreach($headlineColors as $headlineColor): ?>
+                                        <span data-color="<?= $headlineColor ?>"
+                                            class="accessibility-color <?= $headlineColor ?>" role="button">
+                                        </span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            <?php $headlineColors = $this->accessibilitySettings['accessibility_title_text']; ?>
+                            <?php if(!empty($headlineColors)): ?>
+                            <div id="accessibility-action-title-colors"
+                                class="accessibility-action-box accessibility-palette-box">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['adjust_title_color'] ?></span>
+                                    <div class="accessibility-color-box">
+                                        <?php foreach($headlineColors as $headlineColor): ?>
+                                        <span data-color="<?= $headlineColor ?>"
+                                            class="accessibility-color <?= $headlineColor ?>" role="button">
+                                        </span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            <?php $textColors = $this->accessibilitySettings['accessibility_content_text']; ?>
+                            <?php if(!empty($textColors)): ?>
+                            <div id="accessibility-action-text-colors"
+                                class="accessibility-action-box accessibility-palette-box">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['adjust_text_color'] ?></span>
+                                    <div class="accessibility-color-box">
+                                        <?php foreach($textColors as $textColor): ?>
+                                        <span data-color="<?= $textColor ?>" class="accessibility-color <?= $textColor ?>"
+                                            role="button">
+                                        </span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            <?php $headlineColors = $this->accessibilitySettings['accessibility_link_text']; ?>
+                            <?php if(!empty($headlineColors)): ?>
+                            <div id="accessibility-action-link-colors"
+                                class="accessibility-action-box accessibility-palette-box">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['link_color'] ?></span>
+                                    <div class="accessibility-color-box">
+                                        <?php foreach($headlineColors as $headlineColor): ?>
+                                        <span data-color="<?= $headlineColor ?>"
+                                            class="accessibility-color <?= $headlineColor ?>" role="button">
+                                        </span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                            <?php $bgColors = $this->accessibilitySettings['accessibility_content_background']; ?>
+                            <?php if(!empty($bgColors)): ?>
+                            <div id="accessibility-action-background-colors"
+                                class="accessibility-action-box accessibility-palette-box">
+                                <div class="accessibility-action-box-content">
+                                    <span class="accessibility-title"><?= $GLOBALS['TL_LANG']['CTE']['adjust_background_color'] ?></span>
+                                    <div class="accessibility-color-box">
+                                        <?php foreach($bgColors as $bgColor): ?>
+                                        <span data-color="<?= $bgColor ?>" class="accessibility-color <?= $bgColor ?>"
+                                            role="button">
+                                        </span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </section>
+                <section id="accessibility-popup-footer">
+                    <a href="<?= $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['SERVER_NAME'] ?>"
+                        id="accessibility-reset-btn" aria-label="Einstellungen zurücksetzen">
+                        <span><?= $GLOBALS['TL_LANG']['CTE']['reset_settings'] ?></span>
+                    </a>
+                    <button id="accessibility-hide-btn" aria-label="Barrierefreiheit für immer ausblenden">
+                        <span><?= $GLOBALS['TL_LANG']['CTE']['hide_forever'] ?></span>
+                    </button>
+                </section>
+            </div>
+        </div>
+    </div>
+    <?php else: ?>
+    <div class="upk-dynamic-design-changer-false">
+        <button id="accessibility-trigger-button" class="mdp-icon-position-before">
+            <span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 293.05 349.63">
+                    <path
+                        d="M95.37,51.29a51.23,51.23,0,1,1,51.29,51.16h-.07A51.19,51.19,0,0,1,95.37,51.29ZM293,134.59A25.61,25.61,0,0,0,265.49,111h-.13l-89.64,8c-3.06.28-6.13.42-9.19.42H126.65q-4.59,0-9.16-.41L27.7,111a25.58,25.58,0,0,0-4.23,51l.22,0,72.45,6.56a8.55,8.55,0,0,1,7.77,8.48v19.62a33.82,33.82,0,0,1-2.36,12.45L60.48,313.66a25.61,25.61,0,1,0,46.85,20.71h0l39.14-95.61L186,334.63A25.61,25.61,0,0,0,232.86,314L191.63,209.14a34.14,34.14,0,0,1-2.35-12.44V177.09a8.55,8.55,0,0,1,7.77-8.49l72.33-6.55A25.61,25.61,0,0,0,293,134.59Z">
+                    </path>
+                </svg>
+            </span>
+        </button>
+    </div>
+    <?php endif; ?>
+<?php endif; ?>
+<?php endif; ?>

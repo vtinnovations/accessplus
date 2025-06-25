@@ -1,0 +1,8 @@
+services:
+    _defaults:
+        autoconfigure: true
+    VTInnovations\Accessplus\Controller\AltTagsController:
+        arguments:
+            - '@contao.framework'
+        tags: ['controller.service_arguments']
+   
