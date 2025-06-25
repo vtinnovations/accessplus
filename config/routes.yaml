@@ -1,4 +1,4 @@
 # app/config/routes.yaml
-vtinnovations.access_plus.controller:
+vtinnovations.accessibility.controller:
   resource: ../src/Controller
   type: annotation

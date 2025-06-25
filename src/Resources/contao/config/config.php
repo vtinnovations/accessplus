@@ -1,7 +1,7 @@
 <?php
 
 /* 
- * @package   [Access Plus]
+ * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
@@ -12,7 +12,7 @@ use VTInnovations\Accessplus\Hooks\CustomHooks;
 /**
  * FE MODULES
  */
-$GLOBALS['FE_MOD']['accessibility'] = array(
+$GLOBALS['FE_MOD']['accessplus'] = array(
 	'accessibility' 	=> 'VTInnovations\Accessplus\FeMod\Accessibility'
 );
 
@@ -20,3 +20,4 @@ $GLOBALS['FE_MOD']['accessibility'] = array(
  * HOOKS
  */
 $GLOBALS['TL_HOOKS']['outputFrontendTemplate'][] = array(CustomHooks::class, 'outputFrontendTemplate');
+$GLOBALS['TL_HOOKS']['getSystemMessages'][] = array(CustomHooks::class, 'getSystemMessages');

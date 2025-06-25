@@ -1,8 +1,18 @@
+# src/Resources/config/services.yml
 services:
     _defaults:
+        autowire: true
         autoconfigure: true
+        public: true
+        
     VTInnovations\Accessplus\Controller\AltTagsController:
+        public: true
         arguments:
             - '@contao.framework'
         tags: ['controller.service_arguments']
-   
+    
+    VTInnovations\Accessplus\Controller\FrontendController:
+        public: true
+        arguments:
+            - '@contao.framework'
+        tags: ['controller.service_arguments']

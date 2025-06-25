@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 /* 
- * @package   [Access Plus]
+ * @package   [Accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030

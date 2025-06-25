@@ -1,7 +1,7 @@
 <?php
 
 /* 
- * @package   [Access Plus]
+ * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
@@ -12,8 +12,12 @@
  */
 namespace VTInnovations\Accessplus\Hooks;
 
-use Contao\PageModel;
 
+use Contao\ContentElement;
+use Contao\ContentModel;
+use Contao\Controller;
+use Contao\Input;
+use Contao\FilesModel;
  /**
  * Class CustomHooks
  */
@@ -25,7 +29,7 @@ class CustomHooks
         global $objPage;
 		
 		// Fetch root page data
-		$objRootPage = PageModel::findBy(['type = ?', 'language = ?'], ['root', $objPage->language ]);
+		$objRootPage = \PageModel::findBy(['type = ?', 'language = ?'], ['root', $objPage->language ]);
 
         // echo '<pre>'; print_r(); die('</pre>');
         if (strpos($template, 'fe_page') !== false) {
@@ -65,5 +69,25 @@ class CustomHooks
         }
 
         return $buffer;
+    }
+   
+    public function getSystemMessages(): string{
+        $criteriaFile  = ["extension IN ('png', 'jpg', 'jpeg')"];
+        $fileCount = FilesModel::countBy($criteriaFile);
+
+        $criteriaGeneratedFile  = ["extension IN ('png', 'jpg', 'jpeg')", "atlPublished=1"];
+        $generatedFileCount = FilesModel::countBy($criteriaGeneratedFile);
+        
+        if($fileCount ==  $generatedFileCount){
+            return '
+            <p class="tl_info">  All Image alt tag are generated successfully </p>
+            ';
+        }
+        else{
+            return '
+            <p class="tl_info"> Total Image:: '. $fileCount .'. Generate Image Alt tag:: '. $generatedFileCount .'. </p>
+            ';
+        }
+        return '';
     }
 }

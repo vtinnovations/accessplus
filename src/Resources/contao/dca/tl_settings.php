@@ -4,7 +4,6 @@
  *
  * Copyright (c) 2025 - 2030 V&T Innovations LLP
  *
- * PHP version 7
  * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
@@ -181,12 +180,6 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['text_to_speech'] = [
 	'inputType'     => 'checkbox',
 	'eval'          => array('tl_class' => 'w50'),
 ];
-// $GLOBALS['TL_DCA']['tl_settings']['fields']['negative_contrast'] = [
-//     'label'		    => &$GLOBALS['TL_LANG']['tl_settings']['negative_contrast'],
-// 	'exclude'       => true,
-// 	'inputType'     => 'checkbox',
-// 	'eval'          => array('tl_class' => 'w50'),
-// ];
 $GLOBALS['TL_DCA']['tl_settings']['fields']['content_scalling'] = [
     'label'		    => &$GLOBALS['TL_LANG']['tl_settings']['content_scalling'],
 	'exclude'       => true,
