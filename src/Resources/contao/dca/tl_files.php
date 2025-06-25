@@ -1,20 +1,20 @@
-<?php 
+<?php if (!defined('TL_ROOT')) die('You can not access this file directly!');
 
 /**
  * Contao Open Source CMS
  *
+ * Copyright (c) 2025 - 2030 V&T Innovations LLP
  *
- *
- * @package   [Access Plus]
+ * PHP version 7
+ * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
-*/
-
+ */
 
 /**
  * Table tl_files
-*/
+ */
 
 $GLOBALS['TL_DCA']['tl_files']['fields']['atlPublished'] = array(
 	'label'                   => &$GLOBALS['TL_LANG']['tl_files']['atlPublished'],

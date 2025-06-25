@@ -4,7 +4,6 @@
  *
  * Copyright (c) 2025 - 2030 V&T Innovations LLP
  *
- * PHP version 7
  * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA

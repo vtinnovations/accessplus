@@ -1,7 +1,7 @@
 <?php
 
 /* 
- * @package   [Access Plus]
+ * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
@@ -14,14 +14,11 @@
 namespace VTInnovations\Accessplus\FeMod;
 
 use Contao\Module;
-use Contao\System;
-use Contao\BackendTemplate;
-use COntao\PageModel;
 
 /**
  * Class Accessibility
  */
-class Accessibility extends Module
+class Accessibility extends \Module
 {
 	/**
 	 * Template
@@ -36,10 +33,8 @@ class Accessibility extends Module
 	 */
 	public function generate()
 	{
-		$requestStack = System::getContainer()->get('request_stack');
-    	$request = $requestStack->getCurrentRequest();
-		if ($request && System::getContainer()->get('contao.routing.scope_matcher')->isBackendRequest($request)) {
-			$objTemplate = new BackendTemplate('be_wildcard');
+		if (TL_MODE == 'BE') {
+			$objTemplate = new \BackendTemplate('be_wildcard');
 
 			$objTemplate->wildcard = '### Accessibility ###';
 			$objTemplate->title = $this->headline;
@@ -65,7 +60,7 @@ class Accessibility extends Module
 		global $objPage;
 		
 		// Fetch root page data
-		$objRootPage = PageModel::findBy(['type = ?', 'language = ?', 'published = ?'], ['root', $objPage->language, 1 ]);
+		$objRootPage = \PageModel::findBy(['type = ?', 'language = ?', 'published = ?'], ['root', $objPage->language, 1 ]);
 
 		//Set Array with accessibility settings
 		$accessibilitySettingsArray = [];
@@ -108,8 +103,7 @@ class Accessibility extends Module
 			'black_white' 				     	=> \Contao\Config::get('black_white'),
 		];
 		
-
-		//Accessibilities licence 		 
+		// Accessibilities Licence  
 		$accessibilitiesApiKey = $objRootPage->accessibility_licence;
 		$curlAccessibilitiesHeader = [
 			'Content-Type: application/json',
@@ -119,6 +113,7 @@ class Accessibility extends Module
 			'apiKey' 	=> $accessibilitiesApiKey,
 			'url'   	=>  $_SERVER['SERVER_NAME']		
 		];
+		
 
 		$accessibilitysCurl = curl_init();
 		curl_setopt($accessibilitysCurl, CURLOPT_URL, "https://barrierefreie-internetseite.de/rest/api-v1/validator");
@@ -132,7 +127,7 @@ class Accessibility extends Module
 			echo 'cURL error: ' . curl_error($accessibilitysCurl);
 		} 
 		else {
-			$objRootPageType = PageModel:: findByType('root') ;
+			$objRootPageType = \PageModel:: findByType('root') ;
 			$rootLangsArray = [];
 			foreach ($objRootPageType as $key => $value) {
 				$rootLangsArray[] = $value->language;
@@ -151,6 +146,10 @@ class Accessibility extends Module
 		}
 		// Close the cURL session
 		curl_close($accessibilitysCurl);
+
+		
+
+	
 	}
 	function xmlToArray($url) {
 		// Load the XML file
