@@ -12,10 +12,9 @@
         "design",
         "ui",
         "ux",
-        "accessibility",
-        "Access+"
+        "accessibility"
     ],    
-    "version": "dev-main",
+    "version": "3.0.0",
     "require": {
         "php": "^7.4 || ^8.0",
         "contao/core-bundle": "^4.9 || ^4.13 || ^5.0"
