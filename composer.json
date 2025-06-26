@@ -13,8 +13,7 @@
         "ui",
         "ux",
         "accessibility"
-    ],    
-    "version": "3.0.0",
+    ],
     "require": {
         "php": "^7.4 || ^8.0",
         "contao/core-bundle": "^4.9 || ^4.13 || ^5.0"
