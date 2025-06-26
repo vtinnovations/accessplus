@@ -1,7 +1,7 @@
 {
     "name": "vtinnovations/accessplus",
     "type": "contao-bundle",
-    "license": "Proprietary",
+    "license": "proprietary",
     "description": "Access+ seamlessly integrates AI-driven accessibility tools into your Contao site to deliver a more inclusive user experience.",
     "keywords": [
         "contao",
