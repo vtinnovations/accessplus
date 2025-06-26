@@ -16,7 +16,7 @@
     ],
     "require": {
         "php": "^7.4 || ^8.0",
-        "contao/core-bundle": "^4.9 || ^4.12"
+        "contao/core-bundle": "^4.9"
     },
     "autoload": {
         "psr-4": {
