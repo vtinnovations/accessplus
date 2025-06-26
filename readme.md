@@ -1,4 +1,4 @@
-# Access+ für Contao
+# Access+ für Contao®:
 
 **Access+** ist ein professionelles Barrierefreiheits-Plugin für das Contao CMS. Es hilft dir dabei, deine Website einfach, effizient und gesetzeskonform barrierefrei zu machen. Die Erweiterung ist speziell auf die Anforderungen der BITV (Barrierefreie-Informationstechnik-Verordnung) und der EAA (European Accessibility Act) ausgelegt.
 
