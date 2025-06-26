@@ -2,7 +2,7 @@
     "name": "vtinnovations/accessplus",
     "type": "contao-bundle",
     "license": "proprietary",
-    "description": "Access+ seamlessly integrates AI-driven accessibility tools into your Contao site to deliver a more inclusive user experience.",
+    "description": "Access+ Accessibility Toolkit for Contao – seamlessly integrates AI-driven accessibility tools into your Contao site to deliver a more inclusive user experience.",
     "keywords": [
         "contao",
         "Accessplus",
@@ -23,7 +23,10 @@
             "VTInnovations\\Accessplus\\": "src/"
         }
     },
-    "extra": {
+	"extra": {
+		"contao": {
+			"logo": "logo.svg"
+		},
         "contao-manager-plugin": "VTInnovations\\Accessplus\\ContaoManager\\Plugin"
     },
     "config": {
