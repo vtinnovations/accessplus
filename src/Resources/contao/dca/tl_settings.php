@@ -4,7 +4,6 @@
  *
  * Copyright (c) 2025 - 2030 V&T Innovations LLP
  *
- * PHP version 7
  * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
@@ -23,7 +22,7 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['enable_accessibility'] = [
     'label'		    => &$GLOBALS['TL_LANG']['tl_settings']['enable_accessibility'],
 	'exclude'       => true,
 	'inputType'     => 'checkbox',
-	'eval'          => array('submitOnChange'=>true),
+	'eval'          => array('submitOnChange'=>true, 'tl_class' => 'w50 clr'),
 ];
 
 $GLOBALS['TL_DCA']['tl_settings']['fields']['accessibility_title_text'] = [

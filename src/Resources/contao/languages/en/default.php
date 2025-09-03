@@ -74,8 +74,6 @@ $GLOBALS['TL_LANG']['CTE']['alt_tag_generate'] = 'Total Image:: %d. Generate Ima
 
 
 
-
-
 $GLOBALS['TL_LANG']['wave']['category']['alt_missing'] = 'Missing alternative text';
 $GLOBALS['TL_LANG']['wave']['category']['alt_link_missing'] = 'Linked image missing alternative text';
 $GLOBALS['TL_LANG']['wave']['category']['alt_spacer_missing'] = 'Spacer image missing alternative text';

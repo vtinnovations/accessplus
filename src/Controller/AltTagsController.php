@@ -2,6 +2,8 @@
 /**
  * Contao Open Source CMS
  *
+ * Copyright (c) 2019 - 2014 V&T Innovations LLP
+ *
  * PHP version 8.2.x
  * @package   accessplus
  * @author    V&T Innovations Core Team
@@ -20,14 +22,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Contao\PageModel;
 use Contao\FilesModel;
-use Contao\CoreBundle\Framework\ContaoFramework;
+use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
 
 #[Route('/update-alt-tags', name: AltTagsController::class)]
 class AltTagsController
 {
-    private ContaoFramework $framework;
+    private ContaoFrameworkInterface $framework;
 
-    public function __construct(ContaoFramework $framework)
+    public function __construct(ContaoFrameworkInterface $framework)
     {
         $this->framework = $framework;
     }
@@ -51,7 +53,6 @@ class AltTagsController
         $criteria = ["extension IN ('png', 'jpg', 'jpeg')", "atlPublished=0"];
 
         // Find the files with a limit of 5
-        //$objFiles = FilesModel::findById(1235);
         $objFiles = FilesModel::findBy($criteria, null, ['limit' => 10]);
         
         

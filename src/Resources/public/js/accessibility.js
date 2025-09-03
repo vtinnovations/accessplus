@@ -398,7 +398,6 @@ function dyslexiaFontAction(font, backgroundColor){
     // Initialise local vars
     let setFlag = 0;
     setCookie('selectedReadableFont', '', -1);
-
     // Find the element with the matching data-color value
     const element = jQuery(`#accessibility-action-dyslexia-font`);
 

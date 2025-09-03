@@ -1,7 +1,7 @@
 <?php
 
 /* 
- * @package   [Access Plus]
+ * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
@@ -23,7 +23,6 @@ $GLOBALS['FE_MOD']['accessplus'] = array(
 $GLOBALS['BE_MOD']['system']['accessbility_analysis'] = array(
 	'callback' 	=> AccessbilityAnalysis::class
 );
-
 
 /**
  * HOOKS

@@ -4,19 +4,14 @@
 /**
  * Contao Open Source CMS
  *
+ * Copyright (c) 2025 - 2030 V&T Innovations LLP
  *
- *
- * @package   [Accessplus]
+ * PHP version 7
+ * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
-*/
-
-
-/**
- * Table tl_layout
-*/
-
+ */
 
 $GLOBALS['TL_DCA']['tl_layout']['config']['onsubmit_callback'][] = function(\Contao\DataContainer $dc) {
     if(\Contao\Input::get('act') == 'edit' && $dc->activeRecord->id){
@@ -27,7 +22,9 @@ $GLOBALS['TL_DCA']['tl_layout']['config']['onsubmit_callback'][] = function(\Con
         }
         else{
             if(!$layout->addJQuery){
+                
                 $database = \Contao\Database::getInstance();
+
                 $sql = "SELECT m.* 
                         FROM tl_module m 
                         JOIN tl_layout l ON l.id = ?

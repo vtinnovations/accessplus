@@ -196,7 +196,6 @@ $GLOBALS['TL_LANG']['wave']['category']['aria'] = 'ARIA';
 $GLOBALS['TL_LANG']['wave']['wave_key_not_found'] = "Wave api-Schlüssel nicht gefunden";
 
 
-
 //Misc
 $GLOBALS['TL_LANG']['MSC']['input_label'] = 'Bitte geben Sie die URL der Website ein, die Sie überprüfen möchten:';
 $GLOBALS['TL_LANG']['MSC']['submit'] = 'Absenden';

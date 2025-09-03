@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 e.preventDefault();
                 select.focus();
                 return;
-            }   
+            }
             loader.style.display = 'flex';
         });
     }

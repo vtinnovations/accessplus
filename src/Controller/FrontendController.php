@@ -2,10 +2,10 @@
 /**
  * Contao Open Source CMS
  *
- *
+ * Copyright (c) 2019 - 2014 V&T Innovations LLP
  *
  * PHP version 8.2.x
- * @package   Access Plus
+ * @package   accessplus
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
@@ -19,11 +19,12 @@ namespace VTInnovations\Accessplus\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class FrontendController
 {
-    #[Route('/ajax-accessibility', name: FrontendController::class)]
+    #[Route('/ajax-accessibility', name: 'ajax_accessibility', methods: ['POST'])]
     public function __invoke(Request $request): Response
     {
         // Ensure session is started properly
@@ -341,7 +342,7 @@ class FrontendController
 					}		
 				case 'high-contrast':
 					foreach($arrayhighContrasts as $arrayhighContrast){
-						$arrayTagStyles[$arrayhighContrast][] = "filter: contrast(135%)!important; -webkit-backdrop-filter: sepia(1)!important; backdrop-filter: sepia(1)!important";
+						$arrayTagStyles[$arrayhighContrast][] = "filter: contrast(135%) !important; -webkit-backdrop-filter: sepia(1) !important; backdrop-filter: sepia(1) !important";
 					}			
 					break;
             }
@@ -355,7 +356,3 @@ class FrontendController
         return implode("\n", $arrayStyles);
     }
 }
-
-
-?>
-

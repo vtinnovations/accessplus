@@ -1,7 +1,7 @@
 <?php
 
 /* 
- * @package   [Access Plus]
+ * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
@@ -12,13 +12,12 @@
  */
 namespace VTInnovations\Accessplus\Hooks;
 
+
 use Contao\ContentElement;
 use Contao\ContentModel;
 use Contao\Controller;
 use Contao\Input;
 use Contao\FilesModel;
-use Contao\PageModel;
-
  /**
  * Class CustomHooks
  */
@@ -30,7 +29,9 @@ class CustomHooks
         global $objPage;
 		
 		// Fetch root page data
-		$objRootPage = PageModel::findBy(['type = ?', 'language = ?'], ['root', $objPage->language ]);
+		$objRootPage = \PageModel::findBy(['type = ?', 'language = ?'], ['root', $objPage->language ]);
+
+        // echo '<pre>'; print_r(); die('</pre>');
         if (strpos($template, 'fe_page') !== false) {
             $addHtmlBody = '
                 <div id="accessibility-magnifier"></div> 
@@ -69,6 +70,7 @@ class CustomHooks
 
         return $buffer;
     }
+   
     public function getSystemMessages(): string{
         $criteriaFile  = ["extension IN ('png', 'jpg', 'jpeg')"];
         $fileCount = FilesModel::countBy($criteriaFile);

@@ -2102,9 +2102,6 @@ body .text-to-speech-icon img {
     #accessibility-action-align-right {
         width: calc(50% - 11px) !important;
     }
-    /* .accessibility-action-box .accessibility-action-box-content .accessibility-title {
-        font-size: 12px !important;
-    } */
 }
 @media screen and (max-width: 1024px) {
     #accessibility-popup {
@@ -2133,3 +2130,4 @@ body .text-to-speech-icon img {
         max-height: 25vh !important;
     }
 }
+

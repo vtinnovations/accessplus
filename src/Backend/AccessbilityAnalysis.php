@@ -52,7 +52,6 @@ class AccessbilityAnalysis extends BackendModule
         return $this->httpClient;
     }
  
-    
     protected function compile()
     {
         // Add public assets to global list
@@ -62,15 +61,12 @@ class AccessbilityAnalysis extends BackendModule
         // Fetch root page data
 		$objRootPage = PageModel::findBy(['type = ?', 'published = ?'], ['root', 1 ]);
         
-
-
         //Request Token
         $requestToken = System::getContainer()->get('contao.csrf.token_manager')->getDefaultTokenValue();
         $apiResponse = null;
         $errorMessage = null;
         $clientUrl = null;
-        
-        
+
         if ($_SERVER['REQUEST_METHOD'] == 'POST'){
             if(Input::post('root-page')){ 
                 if ($workshopPage = PageModel::findByPk(Input::post('root-page'))) {
@@ -84,12 +80,10 @@ class AccessbilityAnalysis extends BackendModule
                                 $headers = [
                                     'Accept' => 'application/json',
                                 ];
-                
                                 // Send API request
                                 $response = $this->getHttpClient()->request('POST', $apiUrl, [
                                     'headers' => $headers,
                                 ]);
-                
                                 // Convert JSON response to an array
                                 $apiResponse = $response->toArray();
                             } catch (\Exception $e) {
@@ -99,7 +93,6 @@ class AccessbilityAnalysis extends BackendModule
                         else{
                           $errorMessage =  $GLOBALS['TL_LANG']['wave']['wave_key_not_found']; 
                         }
-                        
                     }
                 }
             }
