@@ -38,5 +38,6 @@ $GLOBALS['TL_LANG']['tl_settings']['textlupe'] = array('Text Magnifier', 'It mag
 $GLOBALS['TL_LANG']['tl_settings']['cognitive_reading'] = array('Cognitive Reading', 'It helps you to read the content without any distraction.');
 $GLOBALS['TL_LANG']['tl_settings']['high_contrast'] = array('High Contrast', 'This mode Improves readability and visibility for visually or cognitively impaired users.');
 $GLOBALS['TL_LANG']['tl_settings']['black_white'] = array('Solid color', 'It change to black and white .');
+$GLOBALS['TL_LANG']['tl_settings']['waveApi'] = array('Wave Api key', 'Please provide your wave api key for analysis accessibility.');
 
 ?>

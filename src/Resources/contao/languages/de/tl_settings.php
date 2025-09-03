@@ -38,5 +38,6 @@ $GLOBALS['TL_LANG']['tl_settings']['textlupe'] = array('Textlupe', 'Sie vergrö�
 $GLOBALS['TL_LANG']['tl_settings']['cognitive_reading'] = array('Kognitives Lesen', 'Es hilft Ihnen, den Inhalt ohne Ablenkung zu lesen.');
 $GLOBALS['TL_LANG']['tl_settings']['high_contrast'] = array('Hoher Kontrast', 'Dieser Modus verbessert die Lesbarkeit und Sichtbarkeit für seh- oder kognitiv beeinträchtigte Nutzer.');
 $GLOBALS['TL_LANG']['tl_settings']['black_white'] = array('Einfarbig', 'Es wechselt zu Schwarz und Weiß.');
+$GLOBALS['TL_LANG']['tl_settings']['waveApi'] = array('Wave Api Schlüssel', 'Bitte geben Sie Ihren Wave-Api-Schlüssel an, damit die Analyse zugänglich ist.');
 
 ?>

@@ -1,0 +1,137 @@
+<form action="" method="post" class="tl_form tl_wave_form">
+    <div class="tl_formbody_edit clr mt20">
+        <div class="w50 widget">
+            <h3><label for="all-root-page"><?= $GLOBALS['TL_LANG']['MSC']['root_page_headline'] ?? 'Choose Root Page' ?></label></h3>
+            <select name="root-page" id="all-root-page" class="tl_select">
+                <option></option>
+                <?php foreach ($this->objRootPages as $rootPage):?>
+                <option value="<?= $rootPage->id ?>"><?= $rootPage->title ?></option> 
+                <?php endforeach; ?>
+            </select>
+            <p class="tl_help tl_tip"><?= $GLOBALS['TL_LANG']['MSC']['select_sub_headline'] ?? 'Please select the root page' ?></p>
+        </div>
+    </div>
+    <input type="hidden" class="request-token" name="REQUEST_TOKEN" value="<?= $this->requestToken ?>" />
+    <div class="tl_submit_container clr">
+        <button type="submit" name="save" id="save" class="tl_submit"><?= $GLOBALS['TL_LANG']['MSC']['select_button'] ?? 'Check Accessibility' ?></button>   
+    </div>
+</form>
+<div class="loding_content ajax_loding_accessplus" style="display: none;">
+    <div id="tl_ajaxBox">Loading data …</div>
+</div>
+
+<?php if ($this->apiResponse): ?>
+    <?php if ($this->apiResponse['status']['success']): ?>
+        <div class="text-center my-4">
+            <h2 class="text-center mb-2"><?= $GLOBALS['TL_LANG']['MSC']['acc_report'] ?? 'Accessibility Report' ?></h2>
+            <h5 class="text-secondary">
+                <span class="text-decoration-underline"><?= $GLOBALS['TL_LANG']['MSC']['page_title'] ?? 'Page Title' ?></span> 
+                <?= $this->apiResponse['statistics']['pagetitle'] ?>
+            </h5>
+            <div class="d-flex justify-content-between p15">
+                <h5 class="text-secondary">
+                    <span class="text-decoration-underline"><?= $GLOBALS['TL_LANG']['MSC']['all_item_count'] ?? 'All Item Count' ?></span> 
+                    <?= $this->apiResponse['statistics']['allitemcount'] ?>
+                </h5>
+                <?php if (isset($this->clientUrl)): ?>
+                    <a href="<?= $this->clientUrl ?>" target="_blank" class="text-center mb-5"><?= $this->clientUrl ?></a>
+                <?php endif; ?>
+                <h5 class="text-secondary">
+                    <span class="text-decoration-underline"><?= $GLOBALS['TL_LANG']['MSC']['total_elements'] ?? 'Total Elements' ?></span> 
+                    <?= $this->apiResponse['statistics']['totalelements'] ?>
+                </h5>
+            </div>
+            <div class="accordion" id="accessibilityAccordion">
+                <?php if (isset($this->apiResponse['categories'])): ?>
+                    <?php $index = 0; ?>
+                    <?php foreach ($this->apiResponse['categories'] as $key => $category): ?>
+                        <?php $index++; ?>
+                        <?php
+                        $type = 'primary';
+                        if ($category['description'] == 'Errors') {
+                            $type = 'danger';
+                        } elseif ($category['description'] == 'Contrast Errors' || $category['description'] == 'Alerts') {
+                            $type = 'warning';
+                        }
+                        ?>
+                        <div class="card category-card mb-3 text-start">
+                            <div class="card-header" id="headingErrors<?= $index ?>" data-bs-toggle="collapse"
+                                data-bs-target="#collapseErrors<?= $index ?>" aria-expanded="false" aria-controls="collapseErrors<?= $index ?>">
+                                <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                                    <?= $this->waveCategory[$key] ?? $category['description'] ?>
+                                    <span class="badge bg-<?= $type ?> rounded-pill"><?= $category['count'] ?></span>
+                                </h5>
+                            </div>
+                            <div id="collapseErrors<?= $index ?>" class="collapse" aria-labelledby="headingErrors<?= $index ?>"
+                                data-bs-parent="#accessibilityAccordion">
+                                <div class="card-body">
+                                    <?php if (isset($category['items'])): ?>
+                                        <?php foreach ($category['items'] as $item): ?>
+                                            <div class="issue-item-<?= $type ?>">
+                                                <strong><?= $this->waveCategory[$item['id']] ?? $item['id'] ?></strong>
+                                                <br><?= $GLOBALS['TL_LANG']['MSC']['count'] ?? 'Count' ?>: <?= $item['count'] ?>
+                                                <?php if (isset($item['selectors']) && $item['selectors'] != [false]): ?>
+                                                    <div class="selector-list">
+                                                        <strong><?= $GLOBALS['TL_LANG']['MSC']['selector'] ?? 'Selector' ?></strong>
+                                                        <ul>
+                                                            <?php foreach ($item['selectors'] as $selector): ?>
+                                                                <li><?= htmlspecialchars($selector) ?></li>
+                                                            <?php endforeach; ?>
+                                                        </ul>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <?php if (isset($item['contrastdata']) && $item['contrastdata']): ?>
+                                                    <div class="selector-table selector-list">
+                                                        <strong><?= $GLOBALS['TL_LANG']['MSC']['contrast'] ?? 'Contrast' ?></strong>
+                                                        <table class="table table-bordered table-striped">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th class="text-secondary"><?= $GLOBALS['TL_LANG']['MSC']['relationship'] ?? 'Relationship' ?></th>
+                                                                    <th class="text-secondary"><?= $GLOBALS['TL_LANG']['MSC']['foregroundo'] ?? 'Foreground'?></th>
+                                                                    <th class="text-secondary"><?= $GLOBALS['TL_LANG']['MSC']['background'] ?? 'Background' ?></th>
+                                                                    <th class="text-secondary"><?= $GLOBALS['TL_LANG']['MSC']['true'] ?? 'True'?> </th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <?php foreach ($item['contrastdata'] as $contrastItems): ?>
+                                                                    <tr>
+                                                                        <td class="text-secondary"><?= $contrastItems[0] ?></td>
+                                                                        <td class="text-secondary"><?= $contrastItems[1] ?></td>
+                                                                        <td class="text-secondary"><?= $contrastItems[2] ?></td>
+                                                                        <td class="text-secondary">
+                                                                            <?= $contrastItems[3] == 1 
+                                                                                ? ($GLOBALS['TL_LANG']['MSC']['yes'] ?? 'Yes') 
+                                                                                : ($GLOBALS['TL_LANG']['MSC']['no'] ?? 'No') ?>
+                                                                        </td>
+                                                                    </tr>
+                                                                <?php endforeach; ?>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    <?php elseif (isset($this->apiResponse['status']['error']) && $this->apiResponse['status']['error'] == "Not enough credits."): ?>
+        <div class="text-center my-4">
+            <p><?= $GLOBALS['TL_LANG']['MSC']['back_soon'] ?? 'Please try again later. Credits exhausted.' ?></p>
+        </div>
+    <?php else: ?>
+        <div class="text-center my-4">
+            <p style="color: red;"><?= $GLOBALS['TL_LANG']['MSC']['invalid_url'] ?? 'Invalid URL or error occurred.' ?></p>
+        </div>
+    <?php endif; ?>
+<?php endif; ?>
+
+<?php if ($this->errorMessage): ?>
+    <div class="text-center my-4">
+        <p style="color: red;"><?= $this->errorMessage ?></p>
+    </div>
+<?php endif; ?>

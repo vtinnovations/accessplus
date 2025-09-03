@@ -6,5 +6,6 @@ $GLOBALS['TL_LANG']['tl_page']['accessibility_licence'] = array('Zugänglichkeit
 $GLOBALS['TL_LANG']['tl_page']['backgroundColor'] = array('Zugänglichkeit Farbe', 'Bitte geben Sie die Farbe der Accessibility Box ein (wenn Sie möchten)');
 $GLOBALS['TL_LANG']['tl_page']['enableAltTag'] = array('Alt-Tag-Generator einschalten', 'Bitte ankreuzen, wenn Sie den alt-Tag generieren möchten');
 $GLOBALS['TL_LANG']['tl_page']['openApiKey'] = array('Api-Schlüssel öffnen', 'Bitte Open Api Schlüssel eingeben');
+$GLOBALS['TL_LANG']['tl_page']['positionTop'] = array('Position oben', 'Bitte geben Sie eine Zahl zwischen 5 und 90 ein.');
 
 ?>

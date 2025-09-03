@@ -2,10 +2,8 @@
 /**
  * Contao Open Source CMS
  *
- * 
- *
  * PHP version 8.2.x
- * @package   Access Plus
+ * @package   accessplus
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
@@ -22,14 +20,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Contao\PageModel;
 use Contao\FilesModel;
-use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
+use Contao\CoreBundle\Framework\ContaoFramework;
 
 #[Route('/update-alt-tags', name: AltTagsController::class)]
 class AltTagsController
 {
-    private ContaoFrameworkInterface $framework;
+    private ContaoFramework $framework;
 
-    public function __construct(ContaoFrameworkInterface $framework)
+    public function __construct(ContaoFramework $framework)
     {
         $this->framework = $framework;
     }
@@ -53,9 +51,10 @@ class AltTagsController
         $criteria = ["extension IN ('png', 'jpg', 'jpeg')", "atlPublished=0"];
 
         // Find the files with a limit of 5
-        $objFiles = FilesModel::findBy($criteria, null, ['limit' => 50]);
+        //$objFiles = FilesModel::findById(1235);
+        $objFiles = FilesModel::findBy($criteria, null, ['limit' => 10]);
         
-
+        
         if($objFiles){
             foreach($objFiles as $objFile){
                 // Add asset to global array
@@ -79,7 +78,7 @@ class AltTagsController
                                 [
                                     'role' => 'user',
                                     'content' => [
-                                        ['type' => 'text', 'text' => "What’s in this image in " . $rootLangArray . " ?"],
+                                        ['type' => 'text', 'text' => "What’s in this image in " . $rootLangArray['lang'] . " ? . I want this in max 125 character"],
                                         ['type' => 'image_url', 'image_url' => ['url' => 'data:image/png;base64,' . $image_content, 'detail' => 'high']],
                                     ],
                                 ]
@@ -111,8 +110,7 @@ class AltTagsController
                             $response_data = json_decode($response, true);
 
                             // Print the response
-                            $response_content = $response_data['choices'][0]['message']['content'];
-                            
+                            $response_content = $response_data['choices'][0]['message']['content'];                            
                         }
 
                         // Close the cURL session
@@ -120,10 +118,9 @@ class AltTagsController
 
                         //Fetch Image meta data
                         $objMetaData = unserialize($objImgage->meta);
-                        
                         //Set Data in  arrayTempMataData
                         if($objMetaData[$rootLangArray['lang']]){
-                            $arrayTempMataData[$rootLangArray] = [
+                            $arrayTempMataData[$rootLangArray['lang']] = [
                                 'title'     => $objMetaData[$rootLangArray['lang']]['title'],
                                 'alt'       => $objMetaData[$rootLangArray['lang']]['alt']. '. ' . $response_content,
                                 'link'      => $objMetaData[$rootLangArray['lang']]['link'],

@@ -85,7 +85,6 @@
 .upk-dynamic-design-changer,
 .upk-dynamic-design-changer-false {
     position: fixed !important;
-    top: 50% !important;
     right: 0 !important;
     z-index: 99998 !important;
     margin: 10px !important;
@@ -1739,10 +1738,13 @@ body .text-to-speech-icon {
 body .text-to-speech-icon img {
     border-radius: 50% !important;
 }
-.access-active,
-.access-active-b {
+.access-active{
     box-shadow: 10px 10px 6px 1px #bfb9b9;
     color: #fff;
+}
+.access-active-b {
+    box-shadow: 4px 5px 7px 3px #bfb9b9;
+    color: #fff !important;
 }
 .accessibility-toggle-box.access-active {
     color: var(--readabler-bg);
@@ -1804,7 +1806,7 @@ body .text-to-speech-icon img {
 #accessibility-popup #accessibility-popup-footer button:hover span,
 .accessibility-action-box:hover .accessibility-action-box-content .accessibility-title,
 .accessibility-action-box:hover p {
-    color: #ffffff !important;
+    color: #ffffff;
 }
 .accessibility-action-box:hover .accessibility-action-box-content .accessibility-title.light-contrast-activated{
     color: #000 !important;
@@ -1892,7 +1894,7 @@ body .text-to-speech-icon img {
     box-shadow: 0 0 0 4px var(--readabler-bg), 0 0 0 6px var(--readabler-color) !important;
 }
 .accessibility-palette-box .accessibility-color-box .accessibility-color {
-    border: 4px solid var(--readabler-bg) !important;
+    border: 1px solid !important;
 }
 .accessibility-palette-box .accessibility-color-box .accessibility-color:focus {
     box-shadow: 0 0 0 4px var(--readabler-bg), 0 0 0 6px var(--readabler-text) !important;
@@ -2091,6 +2093,9 @@ body .text-to-speech-icon img {
 .black {
     background-color: #000 !important;
 }
+#accessibility-action-useful-links > .accessibility-action-box-content > .accessibility-select-box >  *:not(#useful-links) {
+    display: none !important;
+}
 @media screen and (max-width: 1440px) {
     #accessibility-action-align-center,
     #accessibility-action-align-left,
@@ -2128,4 +2133,3 @@ body .text-to-speech-icon img {
         max-height: 25vh !important;
     }
 }
-

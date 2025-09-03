@@ -16,7 +16,7 @@
  */
 
 $GLOBALS['TL_DCA']['tl_settings']['palettes']['__selector__'][] = 'enable_accessibility';
-$GLOBALS['TL_DCA']['tl_settings']['palettes']['default'] = str_replace('{chmod_legend},defaultUser,defaultGroup,defaultChmod', '{chmod_legend},defaultUser,defaultGroup,defaultChmod;{accessibility_legend:hide},accessibility_licence,enable_accessibility', $GLOBALS['TL_DCA']['tl_settings']['palettes']['default']);
+$GLOBALS['TL_DCA']['tl_settings']['palettes']['default'] = str_replace('{chmod_legend},defaultUser,defaultGroup,defaultChmod', '{chmod_legend},defaultUser,defaultGroup,defaultChmod;{accessibility_legend:hide},waveApi,enable_accessibility', $GLOBALS['TL_DCA']['tl_settings']['palettes']['default']);
 $GLOBALS['TL_DCA']['tl_settings']['subpalettes']['enable_accessibility'] = 'accessibility_all_text,accessibility_title_text,accessibility_content_text,accessibility_link_text,accessibility_content_background,text_font,alignment,contrast,highlight,big_cursor,hide_images,enable_underline,reading_mask,animation,mute_sound,epilepsy,visually_impaired,cognitive_disability,ADHD_friendly_mode,blindness_mode,online_dictionary,reading_aid,text_to_speech,negative_contrast,content_scalling,textlupe,font_size,line_height,letter_spacing,link_navigator,highlight_focus,mark_hover,cognitive_reading,keyboard_navigation,high_contrast,black_white,';
 
 $GLOBALS['TL_DCA']['tl_settings']['fields']['enable_accessibility'] = [
@@ -181,12 +181,6 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['text_to_speech'] = [
 	'inputType'     => 'checkbox',
 	'eval'          => array('tl_class' => 'w50'),
 ];
-// $GLOBALS['TL_DCA']['tl_settings']['fields']['negative_contrast'] = [
-//     'label'		    => &$GLOBALS['TL_LANG']['tl_settings']['negative_contrast'],
-// 	'exclude'       => true,
-// 	'inputType'     => 'checkbox',
-// 	'eval'          => array('tl_class' => 'w50'),
-// ];
 $GLOBALS['TL_DCA']['tl_settings']['fields']['content_scalling'] = [
     'label'		    => &$GLOBALS['TL_LANG']['tl_settings']['content_scalling'],
 	'exclude'       => true,
@@ -252,5 +246,11 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['black_white'] = [
 	'exclude'       => true,
 	'inputType'     => 'checkbox',
 	'eval'          => array('tl_class' => 'w50'),
+];
+$GLOBALS['TL_DCA']['tl_settings']['fields']['waveApi'] = [
+    'label'		    => &$GLOBALS['TL_LANG']['tl_page']['waveApi'],
+	'exclude'       => true,
+	'inputType'     => 'text',
+	'eval'          => array( 'tl_class' => 'clr', 'tl_class' => 'w50'),
 ];
 ?>

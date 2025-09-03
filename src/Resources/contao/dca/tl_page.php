@@ -14,8 +14,8 @@
  * Table tl_page
 */
 $GLOBALS['TL_DCA']['tl_page']['palettes']['__selector__'][] = 'enableAltTag';
-$GLOBALS['TL_DCA']['tl_page']['palettes']['root'] = str_replace('{publish_legend},published,start,stop', '{accessibility_legend:hide},accessibility_licence,backgroundColor,enableAltTag ;{publish_legend},published,start,stop', $GLOBALS['TL_DCA']['tl_page']['palettes']['root']);
-$GLOBALS['TL_DCA']['tl_page']['palettes']['rootfallback'] = str_replace('{publish_legend},published,start,stop', '{accessibility_legend:hide},accessibility_licence,backgroundColor,enableAltTag;{publish_legend},published,start,stop', $GLOBALS['TL_DCA']['tl_page']['palettes']['rootfallback']);
+$GLOBALS['TL_DCA']['tl_page']['palettes']['root'] = str_replace('{publish_legend},published,start,stop', '{accessibility_legend:hide},accessibility_licence,backgroundColor,positionTop,enableAltTag ;{publish_legend},published,start,stop', $GLOBALS['TL_DCA']['tl_page']['palettes']['root']);
+$GLOBALS['TL_DCA']['tl_page']['palettes']['rootfallback'] = str_replace('{publish_legend},published,start,stop', '{accessibility_legend:hide},accessibility_licence,backgroundColor,positionTop,enableAltTag;{publish_legend},published,start,stop', $GLOBALS['TL_DCA']['tl_page']['palettes']['rootfallback']);
 $GLOBALS['TL_DCA']['tl_page']['subpalettes']['enableAltTag'] = 'openApiKey';
 
 $GLOBALS['TL_DCA']['tl_page']['fields']['accessibility_licence'] = [
@@ -32,6 +32,13 @@ $GLOBALS['TL_DCA']['tl_page']['fields']['backgroundColor'] = array(
     'eval'         => array('maxlength' => 11, 'colorpicker' => true, 'isHexColor' => true, 'decodeEntities' => true, 'tl_class' => 'w50 wizard', 'mandatory' => false),
     'sql'          => "Varchar(255) NOT NULL default ''"
 );
+$GLOBALS['TL_DCA']['tl_page']['fields']['positionTop'] = [
+    'label'		    => &$GLOBALS['TL_LANG']['tl_page']['positionTop'],
+	'exclude'       => true,
+	'inputType'     => 'text',
+	'eval'          => array( 'tl_class' => 'clr', 'tl_class' => 'w50'),
+	'sql'           => "INT(10) NOT NULL default 50"
+];
 $GLOBALS['TL_DCA']['tl_page']['fields']['enableAltTag'] = array(
     'label'        => &$GLOBALS['TL_LANG']['tl_page']['enableAltTag'],
     'inputType'    => 'checkbox',

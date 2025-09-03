@@ -3,7 +3,7 @@
 <?php if($this->accessibilitySettings['enable_accessibility']): ?>
     <?php if($this->accessibilitiesLicence == "SUCCESS") :?>
     
-    <div class="upk-dynamic-design-changer">
+    <div class="upk-dynamic-design-changer" style=" top: <?= $this->objRootPage->positionTop ?>% ;">
         <button id="accessibility-trigger-button" class="mdp-icon-position-before" data-backgroungColor="#<?= $this->objRootPage->backgroundColor ?>">
             <span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 293.05 349.63">
@@ -126,10 +126,10 @@
                         </div>
                         <?php if($this->accessibilitySettings['online_dictionary']):?>
                             <div id="accessibility-online-dictionary" class="accessibility-subheader">
-                                <h4><?= $GLOBALS['TL_LANG']['CTE']['online_dictionary'] ?></h4>
+                                <h4 id="accessibility-online-dictionary-label"><?= $GLOBALS['TL_LANG']['CTE']['online_dictionary'] ?></h4>
                                 <div class="accessibility-online-dictionary-input">
                                     <img src="/bundles/accessplus/images/wikipedia.svg" alt="wikipedia" class="dictionary-input-field-wikipedia">
-                                    <input type="text" name="accessibility-online-dictionary" placeholder="<?= $GLOBALS['TL_LANG']['CTE']['online_dictionary_placeholder'] ?>" class="dictionary-input-field" id="accessibility-online-dictionary">
+                                    <input type="text" name="accessibility-online-dictionary" placeholder="<?= $GLOBALS['TL_LANG']['CTE']['online_dictionary_placeholder'] ?>" class="dictionary-input-field" id="accessibility-online-dictionary-input" aria-labelledby="accessibility-online-dictionary-label" aria-describedby="accessibility-online-dictionary-result" role="searchbox">
                                     <img id="clear-input-dictionary" src="/bundles/accessplus/images/cross.svg" alt="cross" class="dictionary-input-field-cross">
                                 </div>
                                 <div id="accessibility-online-dictionary-result">
@@ -510,7 +510,7 @@
         </div>
     </div>
     <?php else: ?>
-    <div class="upk-dynamic-design-changer-false">
+    <div class="upk-dynamic-design-changer-false" style=" top: <?= $this->objRootPage->positionTop ?>% ;">
         <button id="accessibility-trigger-button" class="mdp-icon-position-before">
             <span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 293.05 349.63">

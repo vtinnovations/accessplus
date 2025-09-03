@@ -5,4 +5,10 @@ services:
         arguments:
             - '@contao.framework'
         tags: ['controller.service_arguments']
+    
+    VTInnovations\Accessplus\Backend\AccessbilityAnalysis:
+        arguments:
+            - '@http_client'
+        tags: ['contao.backend_module']
+
    

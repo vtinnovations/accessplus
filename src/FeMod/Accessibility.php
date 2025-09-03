@@ -65,7 +65,10 @@ class Accessibility extends Module
 		global $objPage;
 		
 		// Fetch root page data
-		$objRootPage = PageModel::findBy(['type = ?', 'language = ?', 'published = ?'], ['root', $objPage->language, 1 ]);
+		$objRootPage = PageModel::findOneBy(
+            ['type = ?', 'language = ?', 'published = ?', 'accessibility_licence IS NOT NULL', 'accessibility_licence != ?'],
+            ['root', $objPage->language, 1, '']
+        );
 
 		//Set Array with accessibility settings
 		$accessibilitySettingsArray = [];
@@ -137,7 +140,6 @@ class Accessibility extends Module
 			foreach ($objRootPageType as $key => $value) {
 				$rootLangsArray[] = $value->language;
 			}
-
 			if($response->status === "SUCCESS"){
 				$this->Template->accessibilitiesLicence = $response->status;
 				$this->Template->accessibilitySettings = $accessibilitySettingsArray;

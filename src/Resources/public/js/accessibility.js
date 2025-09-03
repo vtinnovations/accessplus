@@ -375,6 +375,7 @@ function readableFontAction(font, backgroundColor){
 
     // Remove selection from the dyslexia font button
     element.siblings('#accessibility-action-dyslexia-font').removeClass('access-active');
+    setCookie('selectedDyslexiaFont', '', -1);
 
     // Set active/inactive to self
     element.toggleClass('access-active');
@@ -396,6 +397,7 @@ function readableFontAction(font, backgroundColor){
 function dyslexiaFontAction(font, backgroundColor){
     // Initialise local vars
     let setFlag = 0;
+    setCookie('selectedReadableFont', '', -1);
 
     // Find the element with the matching data-color value
     const element = jQuery(`#accessibility-action-dyslexia-font`);
@@ -1745,6 +1747,9 @@ jQuery(document).ready(function () {
         let valueX = 'none';
         if (jQuery(this).hasClass('access-active')) {
             setFlag = 1;
+            if (jQuery('#accessibility-action-black-and-white').hasClass('access-active')) {
+                jQuery('#accessibility-action-black-and-white').trigger('click');
+            }
             setCookie('accessibility-action-high-contrast', '1', 365);
         }
         else {
@@ -1766,6 +1771,9 @@ jQuery(document).ready(function () {
             setCookie('blackAndWhite', setBlackWhite, 365);
             if (!jQuery('input[type="checkbox"][name="accessibility-accessibility-profile-epilepsy"]').hasClass('access-active')) {
                 jQuery('input[type="checkbox"][name="accessibility-accessibility-profile-epilepsy"]').trigger('click');
+            }
+            if (jQuery('#accessibility-action-high-contrast').hasClass('access-active')) {
+                jQuery('#accessibility-action-high-contrast').trigger('click');
             }
         }
         else{
