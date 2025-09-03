@@ -3,9 +3,8 @@
  * Contao Open Source CMS
  *
  *
- *
  * PHP version 8.2.x
- * @package   Access Plus
+ * @package   accessplus
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
@@ -19,11 +18,14 @@ namespace VTInnovations\Accessplus\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * @Route("/ajax-accessibility", name="vtinnovations_accessibility_ajax, methods={"POST"}")
+ */
 class FrontendController
 {
-    #[Route('/ajax-accessibility', name: FrontendController::class)]
     public function __invoke(Request $request): Response
     {
         // Ensure session is started properly
@@ -355,7 +357,3 @@ class FrontendController
         return implode("\n", $arrayStyles);
     }
 }
-
-
-?>
-

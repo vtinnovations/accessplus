@@ -1,13 +1,13 @@
 <?php
 
 declare(strict_types=1);
-
 /* 
  * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
  */
+
 
 namespace VTInnovations\Accessplus\ContaoManager;     
 use Contao\CoreBundle\ContaoCoreBundle;
@@ -28,10 +28,12 @@ class Plugin implements BundlePluginInterface, RoutingPluginInterface
                 ->setLoadAfter([ContaoCoreBundle::class]),
         ];
     }
-    public function getRouteCollection(LoaderResolverInterface $resolver, KernelInterface $kernel){
+    
+    public function getRouteCollection(LoaderResolverInterface $resolver, KernelInterface $kernel)
+    {
         return $resolver
-            ->resolve(__DIR__.'/../../config/routes.yaml')
-            ->load(__DIR__.'/../../config/routes.yaml')
+            ->resolve(__DIR__.'/../Resources/config/routing.yml')
+            ->load(__DIR__.'/../Resources/config/routing.yml')
         ;
     }
 }

@@ -1,0 +1,12 @@
+vtinnovations_accessplus_alt_tags:
+    path: /update-alt-tags
+    controller: VTInnovations\Accessplus\Controller\AltTagsController::__invoke
+    defaults:
+        _scope: frontend
+        
+vtinnovations_accessibility_ajax:
+    path: /ajax-accessibility
+    controller: VTInnovations\Accessplus\Controller\FrontendController::__invoke
+    methods: [POST]
+    defaults:
+        _scope: frontend

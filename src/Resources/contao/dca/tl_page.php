@@ -3,16 +3,16 @@
 /**
  * Contao Open Source CMS
  *
- *
- * @package   [Accessplus]
+ * @package   [accessplus]
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
-*/
+ */
 
 /**
  * Table tl_page
-*/
+ */
+
 $GLOBALS['TL_DCA']['tl_page']['palettes']['__selector__'][] = 'enableAltTag';
 $GLOBALS['TL_DCA']['tl_page']['palettes']['root'] = str_replace('{publish_legend},published,start,stop', '{accessibility_legend:hide},accessibility_licence,backgroundColor,positionTop,enableAltTag ;{publish_legend},published,start,stop', $GLOBALS['TL_DCA']['tl_page']['palettes']['root']);
 $GLOBALS['TL_DCA']['tl_page']['palettes']['rootfallback'] = str_replace('{publish_legend},published,start,stop', '{accessibility_legend:hide},accessibility_licence,backgroundColor,positionTop,enableAltTag;{publish_legend},published,start,stop', $GLOBALS['TL_DCA']['tl_page']['palettes']['rootfallback']);
@@ -52,5 +52,6 @@ $GLOBALS['TL_DCA']['tl_page']['fields']['openApiKey'] = [
 	'eval'          => array( 'tl_class' => 'clr', 'tl_class' => 'w50'),
 	'sql'           =>  "VARCHAR (100) NOT NULL default ''"
 ];
+
 
 ?>

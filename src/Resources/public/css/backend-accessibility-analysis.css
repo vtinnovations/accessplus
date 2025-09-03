@@ -114,7 +114,6 @@ th, td {
 #accessibilityAccordion .card-body {
     margin: 14px;
     text-align: justify;
-    color: #3c3c3c;
 }
 .collapse.show{
     display: block
@@ -148,7 +147,6 @@ span.badge.bg-primary.rounded-pill {
 #accessibilityAccordion h5 {
     color: #ffffff;
     align-items: center;
-    margin: 0;
 }
 .box-accodian{
     border-radius: 10px;

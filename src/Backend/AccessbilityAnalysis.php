@@ -62,14 +62,9 @@ class AccessbilityAnalysis extends BackendModule
         // Fetch root page data
 		$objRootPage = PageModel::findBy(['type = ?', 'published = ?'], ['root', 1 ]);
         
-
-
-        //Request Token
-        $requestToken = System::getContainer()->get('contao.csrf.token_manager')->getDefaultTokenValue();
         $apiResponse = null;
         $errorMessage = null;
         $clientUrl = null;
-        
         
         if ($_SERVER['REQUEST_METHOD'] == 'POST'){
             if(Input::post('root-page')){ 
@@ -99,14 +94,13 @@ class AccessbilityAnalysis extends BackendModule
                         else{
                           $errorMessage =  $GLOBALS['TL_LANG']['wave']['wave_key_not_found']; 
                         }
-                        
                     }
                 }
             }
         }
         // Assigning template vars
         $this->Template->objRootPages    = $objRootPage;
-        $this->Template->requestToken   = $requestToken;
+        // $this->Template->requestToken   = $requestToken;
         $this->Template->apiResponse     = $apiResponse;
         $this->Template->errorMessage    = $errorMessage;
         $this->Template->clientUrl       = $clientUrl;

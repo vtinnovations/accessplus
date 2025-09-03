@@ -11,7 +11,7 @@
             <p class="tl_help tl_tip"><?= $GLOBALS['TL_LANG']['MSC']['select_sub_headline'] ?? 'Please select the root page' ?></p>
         </div>
     </div>
-    <input type="hidden" class="request-token" name="REQUEST_TOKEN" value="<?= $this->requestToken ?>" />
+    <input type="hidden" class="request-token" name="REQUEST_TOKEN" value="<?= REQUEST_TOKEN ?>" />
     <div class="tl_submit_container clr">
         <button type="submit" name="save" id="save" class="tl_submit"><?= $GLOBALS['TL_LANG']['MSC']['select_button'] ?? 'Check Accessibility' ?></button>   
     </div>

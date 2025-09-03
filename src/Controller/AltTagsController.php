@@ -2,32 +2,29 @@
 /**
  * Contao Open Source CMS
  *
- * PHP version 8.2.x
+ *
  * @package   accessplus
  * @author    V&T Innovations Core Team
  * @license   SLA/TLA
  * @copyright V&T Innovations 2025 - 2030
  */
 
-
-/**
- * Namespace
- */
 namespace VTInnovations\Accessplus\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Contao\PageModel;
 use Contao\FilesModel;
-use Contao\CoreBundle\Framework\ContaoFramework;
+use Contao\CoreBundle\Framework\ContaoFrameworkInterface;
 
-#[Route('/update-alt-tags', name: AltTagsController::class)]
+/**
+ * @Route("/update-alt-tags", name="vtinnovations_accessplus_alt_tags")
+ */
 class AltTagsController
 {
-    private ContaoFramework $framework;
+    private $framework;
 
-    public function __construct(ContaoFramework $framework)
+    public function __construct(ContaoFrameworkInterface $framework)
     {
         $this->framework = $framework;
     }
@@ -41,17 +38,16 @@ class AltTagsController
         
         $rootLangsArray = [];
 
-		foreach ($objRootPageType as $key => $value) {
+        foreach ($objRootPageType as $key => $value) {
             $rootLangsArray[] = [
                 'lang'          => $value->language,
                 'openApiKey'    => $value->openApiKey
             ];
-		}
+        }
         
         $criteria = ["extension IN ('png', 'jpg', 'jpeg')", "atlPublished=0"];
 
         // Find the files with a limit of 5
-        //$objFiles = FilesModel::findById(1235);
         $objFiles = FilesModel::findBy($criteria, null, ['limit' => 10]);
         
         
@@ -148,8 +144,6 @@ class AltTagsController
             $massege = "Image Alt Generate DONE";
         }
 
-        return new Response('Image Alt Generate DONE');
+        return new Response('Image Alt Generate Done Successfully');
     }
 }
-
-?>
