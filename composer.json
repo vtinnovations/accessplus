@@ -2,7 +2,7 @@
     "name": "vtinnovations/accessplus",
     "type": "contao-bundle",
     "license": "proprietary",
-    "description": "Access+ seamlessly integrates AI-driven accessibility tools into your Contao site to deliver a more inclusive user experience.",
+    "description": "Access Plus seamlessly integrates AI-driven accessibility tools into your Contao site to deliver a more inclusive user experience.",
     "keywords": [
         "contao",
         "Accessplus",
@@ -14,8 +14,7 @@
         "ux",
         "accessibility",
         "Access+"
-    ],    
-    "version": "dev-main",
+    ],
     "require": {
         "php": "^7.4 || ^8.0",
         "contao/core-bundle": ">=4.9 <4.13"
