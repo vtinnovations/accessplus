@@ -14,7 +14,11 @@
         "ux",
         "accessibility",
         "Access Plus"
-    ],
+	],
+    "support": {
+		"issues": "https://github.com/vtinnovations/accessplus/issues",
+		"source": "https://github.com/vtinnovations/accessplus"
+	}
     "require": {
         "php": "^7.4 || ^8.0",
         "contao/core-bundle": ">=4.13 <5.0"
