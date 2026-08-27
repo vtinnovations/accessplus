@@ -1,4 +1,0 @@
-# app/config/routes.yaml
-vtinnovations.access_plus.controller:
-  resource: ../src/Controller
-  type: annotation
