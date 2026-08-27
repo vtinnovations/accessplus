@@ -1,0 +1,280 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    # Every accessibility check is auto-tagged for the registry.
+    _instanceof:
+        VTInnovations\AccessPlus\Check\CheckInterface:
+            tags: ['vtinnovations.accessplus.check']
+
+    VTInnovations\AccessPlus\:
+        resource: '../src/'
+        exclude:
+            - '../src/VTInnovationsAccessPlusBundle.php'
+            - '../src/ContaoManager/'
+            - '../src/DependencyInjection/'
+            - '../src/Controller/'              # Contao instantiates BE_MOD callbacks via `new`
+            - '../src/FrontendModule/'          # Contao instantiates FE modules itself
+            - '../src/Model/'                   # Contao Models, not services
+            - '../src/Ai/AiClientInterface.php' # interface
+            - '../src/Ai/PromptBundle.php'      # value object
+            - '../src/Ai/AiResponse.php'        # value object
+            - '../src/Ai/AiException.php'       # exception
+            - '../src/Ai/AiExceptionKind.php'   # enum
+            - '../src/Ai/TestResult.php'        # value object
+            - '../src/Check/CheckInterface.php' # interface
+            - '../src/Check/Finding.php'        # value object
+            - '../src/Check/RunSummary.php'     # value object
+            - '../src/Check/Severity.php'       # enum
+            - '../src/Check/SourceType.php'     # enum
+            - '../src/Check/FindingStatus.php'  # enum
+            - '../src/Check/Analysis/'          # pure static helpers
+            - '../src/Alt/LoadedImage.php'      # value object
+            - '../src/Alt/AltProposal.php'      # value object
+            - '../src/Alt/AltSummary.php'       # value object
+            - '../src/Alt/MetaWriteResult.php'  # enum
+            - '../src/Alt/ImageLoadException.php' # exception
+            - '../src/Dashboard/Category.php'    # enum
+            - '../src/Pdf/PdfReport.php'         # value object
+            - '../src/Pdf/PdfScanSummary.php'    # value object
+            - '../src/Monitor/Delta.php'         # value object
+            - '../src/Overlay/OverlayFeatures.php' # static catalogue
+            - '../src/Subtitle/TranscriptResult.php'  # value object
+            - '../src/Subtitle/SubtitleCandidate.php' # value object
+            - '../src/Subtitle/MediaLoadException.php' # exception
+            - '../src/Simplify/SimplifyItem.php'      # value object
+            - '../src/Simplify/SimplifySummary.php'   # value object
+            - '../src/Security/CanonicalForm.php'     # pure static helper
+            - '../src/Security/DetachedSignature.php' # pure static helper
+            - '../src/Security/SealedPackage.php'     # value object
+            - '../src/Security/PackageRejected.php'   # exception
+            - '../src/State/SiteStatus.php'           # value object
+            - '../src/State/SiteState.php'            # enum
+
+    # ── State + secrets (need the project dir explicitly) ───────────────
+    VTInnovations\AccessPlus\State\RuntimeConfig:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+        public: true   # fetched by the BE_MOD callback via the container
+
+    # Per-domain scoping helper (Modell 2). Autowired (Connection); public so the
+    # BE_MOD tab callbacks can fetch it via the container.
+    VTInnovations\AccessPlus\State\RootScope:
+        public: true
+
+    # One-time prefix rename tca11y → accessplus (tables + state dir). Autoconfigured
+    # as a contao.migration; only needs the project dir.
+    VTInnovations\AccessPlus\Migration\RenamePrefixMigration:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    # One-time folder rename var/vta11y → var/accessplus. Autoconfigured as a
+    # contao.migration; needs the project dir explicitly (scalar, not autowirable).
+    VTInnovations\AccessPlus\Migration\RenameToAccessPlusMigration:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    VTInnovations\AccessPlus\Security\SecretStore:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+        public: true   # fetched by the BE_MOD callback via the container
+
+    # ── Site registration (Modell 2: state per site root) ────────────────
+    # Deliberately spread over the existing seams: trust material + verification
+    # in Security, policy/persistence/scope in State, transport + journal in
+    # Exchange, the public callback in Controller. No single service, file or
+    # registration carries the whole flow.
+    VTInnovations\AccessPlus\State\RegistrationStore:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    VTInnovations\AccessPlus\Exchange\RequestJournal:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    # Same explicit @http_client wiring the AI providers use.
+    VTInnovations\AccessPlus\Exchange\ExchangeClient:
+        arguments:
+            $httpClient: '@http_client'
+
+    VTInnovations\AccessPlus\Exchange\UsageSignal:
+        arguments:
+            $httpClient: '@http_client'
+
+    # Public: fetched from the container by the root-page DCA section and by the
+    # backend hub, both of which Contao instantiates with `new`.
+    VTInnovations\AccessPlus\State\SiteStatusProvider:
+        public: true
+
+    VTInnovations\AccessPlus\State\SiteRegistrar:
+        public: true
+
+    VTInnovations\AccessPlus\State\BackendSessionClaim:
+        public: true
+
+    VTInnovations\AccessPlus\State\DomainInventory:
+        public: true
+
+    VTInnovations\AccessPlus\Exchange\DeferredSignals:
+        public: true
+
+    VTInnovations\AccessPlus\Controller\ServiceCallbackController:
+        autowire: true
+        public: true
+        tags: ['controller.service_arguments']
+
+    # Signals are sent after the response, never during it. Registered by tag
+    # because the bundle still supports Symfony 5.4 (no #[AsEventListener] there).
+    VTInnovations\AccessPlus\EventListener\UsageSignalListener:
+        tags:
+            - { name: kernel.event_listener, event: kernel.terminate, method: onTerminate }
+
+    # ── AI provider clients ─────────────────────────────────────────────
+    # Tagged so the factory iterates without knowing concrete classes.
+    VTInnovations\AccessPlus\Ai\Provider\OpenAiClient:
+        arguments:
+            $httpClient: '@http_client'
+        tags:
+            - { name: vtinnovations.accessplus.ai_client }
+
+    VTInnovations\AccessPlus\Ai\Provider\CompatibleClient:
+        arguments:
+            $httpClient: '@http_client'
+        tags:
+            - { name: vtinnovations.accessplus.ai_client }
+
+    VTInnovations\AccessPlus\Ai\AiClientFactory:
+        arguments:
+            $clients: !tagged_iterator vtinnovations.accessplus.ai_client
+            $runtimeConfig: '@VTInnovations\AccessPlus\State\RuntimeConfig'
+
+    VTInnovations\AccessPlus\Ai\ConnectionTester:
+        public: true   # fetched by the BE_MOD callback via the container
+
+    # ── Phase 2: Linter engine ──────────────────────────────────────────
+    # Concrete checks autowire from the resource block and are tagged via
+    # _instanceof; they receive the DB connection + RuntimeConfig by autowiring.
+    VTInnovations\AccessPlus\Check\CheckRegistry:
+        arguments:
+            $checks: !tagged_iterator vtinnovations.accessplus.check
+        public: true   # fetched by the report BE_MOD callback
+
+    VTInnovations\AccessPlus\Check\LintRunner:
+        public: true   # fetched by the report BE_MOD callback
+
+    # ── Phase 3: AI alt-text engine ─────────────────────────────────────
+    VTInnovations\AccessPlus\Alt\ImageLoader:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    VTInnovations\AccessPlus\Alt\AltSuggestionService:
+        public: true   # fetched by the alt BE_MOD callback
+
+    # ── Phase 10: AI subtitles (Whisper → VTT) ──────────────────────────
+    VTInnovations\AccessPlus\EventListener\SubtitleTrackInjector:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    VTInnovations\AccessPlus\Subtitle\AudioTranscriber:
+        arguments:
+            $httpClient: '@http_client'
+            $projectDir: '%kernel.project_dir%'
+
+    VTInnovations\AccessPlus\Subtitle\SubtitleService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+        public: true   # fetched by the subtitle BE_MOD callback
+
+    VTInnovations\AccessPlus\Command\GenerateSubtitlesCommand:
+        tags:
+            - { name: console.command }
+
+    # ── Phase 11: Plain/Easy language ───────────────────────────────────
+    VTInnovations\AccessPlus\Simplify\SimplifyService:
+        public: true   # fetched by the simplify BE_MOD callback
+
+    VTInnovations\AccessPlus\EventListener\SimpleSwitchInjector:
+        arguments:
+            $runtimeConfig: '@VTInnovations\AccessPlus\State\RuntimeConfig'
+            $requestStack: '@request_stack'
+
+    VTInnovations\AccessPlus\Command\GenerateSimpleCommand:
+        tags:
+            - { name: console.command }
+
+    # ── Phase 4: Dashboard / full analysis ──────────────────────────────
+    VTInnovations\AccessPlus\Dashboard\CategoryClassifier:
+        public: true   # fetched by the dashboard BE_MOD callback
+
+    VTInnovations\AccessPlus\Dashboard\FullAnalysis:
+        public: true   # fetched by the dashboard BE_MOD callback
+
+    # ── Frontend scanner (axe-core in BE preview iframe) ────────────────
+    VTInnovations\AccessPlus\Frontend\PageUrlProvider:
+        public: true   # fetched by the frontend-scan BE_MOD callback
+
+    VTInnovations\AccessPlus\Controller\FrontendScanController:
+        autowire: true
+        arguments:
+            $csrfTokenManager: '@contao.csrf.token_manager'
+            $csrfTokenName: '%contao.csrf_token_name%'
+        public: true
+        tags: ['controller.service_arguments']
+
+    VTInnovations\AccessPlus\Controller\DbAnalyzeController:
+        autowire: true
+        arguments:
+            $csrfTokenManager: '@contao.csrf.token_manager'
+            $csrfTokenName: '%contao.csrf_token_name%'
+        public: true
+        tags: ['controller.service_arguments']
+
+    VTInnovations\AccessPlus\Controller\HighlightController:
+        autowire: true
+        public: true
+        tags: ['controller.service_arguments']
+
+    # ── ARIA-name fixes ─────────────────────────────────────────────────
+    VTInnovations\AccessPlus\Controller\AriaIngestController:
+        autowire: true
+        arguments:
+            $csrfTokenManager: '@contao.csrf.token_manager'
+            $csrfTokenName: '%contao.csrf_token_name%'
+        public: true
+        tags: ['controller.service_arguments']
+
+    VTInnovations\AccessPlus\Aria\NameRecommender:
+        public: true   # fetched by the ARIA BE_MOD callback ("KI-Vorschlag")
+
+    # ── Phase 6: Monitoring ─────────────────────────────────────────────
+    VTInnovations\AccessPlus\Monitor\DeltaCalculator:
+        public: true   # fetched by the dashboard BE_MOD callback
+
+    VTInnovations\AccessPlus\Cron\MonitorCron:
+        tags:
+            - { name: contao.cronjob, interval: daily }
+
+    VTInnovations\AccessPlus\Command\MonitorCommand:
+        tags:
+            - { name: console.command }
+
+    # ── Phase 7: PDF accessibility ──────────────────────────────────────
+    VTInnovations\AccessPlus\Pdf\PdfAnalyzer:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+
+    VTInnovations\AccessPlus\Pdf\PdfScanService:
+        public: true   # fetched by the PDF BE_MOD callback
+
+    VTInnovations\AccessPlus\Command\PdfScanCommand:
+        tags:
+            - { name: console.command }
+
+    # ── Phase 8: Statement + feedback channel ───────────────────────────
+    VTInnovations\AccessPlus\Statement\StatementService:
+        public: true   # fetched by the BE module + the FE statement module
+
+    VTInnovations\AccessPlus\Feedback\FeedbackNotifier:
+        public: true   # fetched by the FE feedback module

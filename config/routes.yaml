@@ -1,0 +1,57 @@
+# Frontend-scan ingest endpoint. Explicit definition (no attribute/annotation
+# loader) so it works identically on Symfony 5.4 (Contao 4.13) and 6.4 (Contao
+# 5.x). Path lives under the default backend route prefix /contao so the backend
+# firewall protects it; the controller also validates the request token.
+vtinnovations_accessplus_axe_ingest:
+    path: /contao/accessplus/axe-ingest
+    methods: [POST]
+    defaults:
+        _controller: VTInnovations\AccessPlus\Controller\FrontendScanController
+        _scope: backend
+        # Disable Contao's automatic request-token listener (it only reads the
+        # token from the POST body and would 400 our JSON/header-token Ajax POST).
+        # Safe: route is behind the backend firewall AND the controller validates
+        # the request token itself via the CSRF manager.
+        _token_check: false
+
+# Database analysis trigger for the combined full scan (POST + token, backend
+# firewall). The client orchestrator calls this first, then runs the axe scan.
+vtinnovations_accessplus_db_analyze:
+    path: /contao/accessplus/db-analyze
+    methods: [POST]
+    defaults:
+        _controller: VTInnovations\AccessPlus\Controller\DbAnalyzeController
+        _scope: backend
+        # See axe-ingest above: the controller validates the token itself.
+        _token_check: false
+
+# ARIA-name candidates from the scan (elements missing an accessible name).
+vtinnovations_accessplus_aria_ingest:
+    path: /contao/accessplus/aria-ingest
+    methods: [POST]
+    defaults:
+        _controller: VTInnovations\AccessPlus\Controller\AriaIngestController
+        _scope: backend
+        # See axe-ingest above: the controller validates the token itself.
+        _token_check: false
+
+# Server-to-server state callback. The path is fixed by the vendor protocol and
+# must stay exactly as written. No method restriction on the route itself so a
+# GET reaches the controller and can be answered with 405 + Allow (a router-level
+# method filter would surface as Contao's 404 page instead). It is deliberately
+# NOT in the backend scope: the caller is a server, not a logged-in user, and the
+# controller authenticates it cryptographically. `_token_check: false` documents
+# that browser CSRF is intentionally not the trust mechanism here.
+vtinnovations_accessplus_service_callback:
+    path: /rest/api/v1/accessplus-license-updater
+    defaults:
+        _controller: VTInnovations\AccessPlus\Controller\ServiceCallbackController
+        _token_check: false
+
+# "Show on page" highlight preview (read-only GET, behind the backend firewall).
+vtinnovations_accessplus_highlight:
+    path: /contao/accessplus/highlight
+    methods: [GET]
+    defaults:
+        _controller: VTInnovations\AccessPlus\Controller\HighlightController
+        _scope: backend

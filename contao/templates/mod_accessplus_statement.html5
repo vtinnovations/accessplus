@@ -1,0 +1,45 @@
+<?php
+/**
+ * Frontend template: accessibility statement (BFSG/BITV).
+ * Output is escaped; values come from the admin-entered config.
+ *
+ * @var array<string,mixed> $this->statement
+ * @var string $this->statusLabel
+ */
+$s = $this->statement;
+$e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$nl = static fn ($v): string => nl2br(htmlspecialchars((string) $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+$t = static fn (string $key, array $params = []): string => \VTInnovations\AccessPlus\I18n\Text::get($key, $params);
+
+$urlHtml = $s['url'] ? ' <a href="' . $e($s['url']) . '">' . $e($s['url']) . '</a>' : '';
+$methodText = $t($s['method'] === 'external' ? 'statement_public.method_external' : 'statement_public.method_self');
+?>
+<section class="accessplus-statement">
+  <h2><?= $e($t('statement_public.heading')) ?></h2>
+
+  <p><?= $t('statement_public.intro', ['org' => $e($s['org']), 'url_html' => $urlHtml]) ?></p>
+
+  <h3><?= $e($t('statement_public.status_heading')) ?></h3>
+  <p><?= $t('statement_public.status_text', ['status' => $e($this->statusLabel)]) ?></p>
+
+  <?php if ($s['nonaccessible']): ?>
+    <h3><?= $e($t('statement_public.nonaccessible_heading')) ?></h3>
+    <p><?= $nl($s['nonaccessible']) ?></p>
+  <?php endif; ?>
+
+  <h3><?= $e($t('statement_public.creation_heading')) ?></h3>
+  <p><?= $t('statement_public.creation_text', ['date' => $e($s['prepared'] ?: '—'), 'method' => $e($methodText)]) ?></p>
+
+  <h3><?= $e($t('statement_public.feedback_heading')) ?></h3>
+  <p><?= $e($t('statement_public.feedback_intro')) ?></p>
+  <ul>
+    <?php if ($s['contactName']): ?><li><?= $e($s['contactName']) ?></li><?php endif; ?>
+    <?php if ($s['contactEmail']): ?><li><?= $e($t('statement_public.email_label')) ?> <a href="mailto:<?= $e($s['contactEmail']) ?>"><?= $e($s['contactEmail']) ?></a></li><?php endif; ?>
+    <?php if ($s['contactPhone']): ?><li><?= $e($t('statement_public.phone_label')) ?> <?= $e($s['contactPhone']) ?></li><?php endif; ?>
+  </ul>
+
+  <?php if ($s['enforcement']): ?>
+    <h3><?= $e($t('statement_public.enforcement_heading')) ?></h3>
+    <p><?= $nl($s['enforcement']) ?></p>
+  <?php endif; ?>
+</section>
