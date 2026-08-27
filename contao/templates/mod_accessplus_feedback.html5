@@ -1,0 +1,48 @@
+<?php
+/**
+ * Frontend template: barrier-report form (BFSG feedback channel).
+ * Hand-built form (no symfony/form), request token + honeypot.
+ *
+ * @var bool   $this->confirmed
+ * @var array<int,string>    $this->errors
+ * @var array<string,string> $this->values
+ */
+$e = static fn ($v): string => htmlspecialchars((string) $v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+$t = static fn (string $key): string => \VTInnovations\AccessPlus\I18n\Text::get($key);
+$v = $this->values;
+?>
+<section class="accessplus-feedback">
+  <h2><?= $e($t('feedback_form.heading')) ?></h2>
+
+  <?php if ($this->confirmed): ?>
+    <p class="accessplus-feedback__ok" role="status"><?= $e($t('feedback_form.thank_you')) ?></p>
+  <?php else: ?>
+    <?php if (!empty($this->errors)): ?>
+      <div class="accessplus-feedback__errors" role="alert">
+        <ul><?php foreach ($this->errors as $err): ?><li><?= $e($err) ?></li><?php endforeach; ?></ul>
+      </div>
+    <?php endif; ?>
+
+    <form method="post">
+      <input type="hidden" name="REQUEST_TOKEN" value="{{request_token}}">
+      <input type="hidden" name="accessplus_feedback" value="1">
+      <div style="position:absolute;left:-9999px;" aria-hidden="true">
+        <label><?= $e($t('feedback_form.honeypot_label')) ?> <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+      </div>
+
+      <p><label for="accessplus-name"><?= $e($t('feedback_form.name_label')) ?></label><br>
+        <input type="text" id="accessplus-name" name="name" value="<?= $e($v['name']) ?>" maxlength="128"></p>
+
+      <p><label for="accessplus-email"><?= $e($t('feedback_form.email_label')) ?></label><br>
+        <input type="email" id="accessplus-email" name="email" value="<?= $e($v['email']) ?>" maxlength="255"></p>
+
+      <p><label for="accessplus-url"><?= $e($t('feedback_form.url_label')) ?></label><br>
+        <input type="url" id="accessplus-url" name="url" value="<?= $e($v['url']) ?>" maxlength="2048"></p>
+
+      <p><label for="accessplus-message"><?= $e($t('feedback_form.message_label')) ?> <span aria-hidden="true">*</span></label><br>
+        <textarea id="accessplus-message" name="message" rows="5" required maxlength="5000"><?= $e($v['message']) ?></textarea></p>
+
+      <p><button type="submit"><?= $e($t('feedback_form.submit_btn')) ?></button></p>
+    </form>
+  <?php endif; ?>
+</section>

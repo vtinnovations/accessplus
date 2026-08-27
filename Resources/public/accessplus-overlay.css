@@ -1,0 +1,153 @@
+/*
+ * AccessPlus
+ *
+ * Package: vtinnovations/accessplus
+ * Copyright: V&T Innovations Team
+ * Licence: LGPL-3.0-or-later
+ * Website: https://www.v-t.one
+ */
+
+/*
+ * vtinnovations/accessplus — comfort overlay (full feature set).
+ * Self-contained, no external resources. Effects toggled via html.accessplus-*
+ * classes + a dynamic <style id="accessplus-dyn"> for level/colour rules.
+ * Accent colour + position come from the mount point's data-* attributes.
+ *
+ * Comfort/display layer — never a substitute for an accessible site.
+ */
+
+/* ── Position (base default = bottom-right, so it is NEVER unpositioned) ── */
+#accessplus-overlay-root{position:fixed;z-index:2147483647;--accessplus-accent:#1d4ed8;bottom:1rem;right:1rem;top:auto;left:auto;}
+#accessplus-overlay-root.pos-bottomright{bottom:1rem;right:1rem;top:auto;left:auto;}
+#accessplus-overlay-root.pos-bottomleft{bottom:1rem;left:1rem;top:auto;right:auto;}
+#accessplus-overlay-root.pos-topright{top:1rem;right:1rem;bottom:auto;left:auto;}
+#accessplus-overlay-root.pos-topleft{top:1rem;left:1rem;bottom:auto;right:auto;}
+#accessplus-overlay-root.pos-middleright{top:50%;right:1rem;bottom:auto;left:auto;transform:translateY(-50%);}
+#accessplus-overlay-root.pos-middleleft{top:50%;left:1rem;bottom:auto;right:auto;transform:translateY(-50%);}
+
+/* ── Widget chrome ─────────────────────────────────────────────── */
+.accessplus-btn{
+  width:52px;height:52px;border-radius:50%;border:2px solid #fff;background:var(--accessplus-accent);color:#fff;
+  font-size:24px;line-height:1;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.4);
+  display:flex;align-items:center;justify-content:center;
+}
+.accessplus-btn:focus-visible,.accessplus-panel button:focus-visible,.accessplus-panel select:focus-visible{outline:3px solid #ffbf47;outline-offset:2px;}
+.accessplus-panel{
+  box-sizing:border-box;position:absolute;width:340px;max-width:90vw;max-height:calc(100vh - 96px);overflow-y:auto;overflow-x:hidden;
+  bottom:64px;right:0;
+  background:#fff;color:#111;border:1px solid #888;border-radius:10px;
+  box-shadow:0 8px 28px rgba(0,0,0,.32);padding:14px;font:15px/1.4 system-ui,Arial,sans-serif;
+}
+.pos-bottomright .accessplus-panel,.pos-bottomleft .accessplus-panel{bottom:64px;top:auto;}
+.pos-topright .accessplus-panel,.pos-topleft .accessplus-panel{top:64px;bottom:auto;}
+.pos-bottomright .accessplus-panel,.pos-topright .accessplus-panel{right:0;left:auto;}
+.pos-bottomleft .accessplus-panel,.pos-topleft .accessplus-panel{left:0;right:auto;}
+/* middle: open to the SIDE of the button, vertically centred (never downward) */
+.pos-middleright .accessplus-panel{right:64px;left:auto;top:50%;bottom:auto;transform:translateY(-50%);}
+.pos-middleleft .accessplus-panel{left:64px;right:auto;top:50%;bottom:auto;transform:translateY(-50%);}
+.accessplus-panel[hidden]{display:none;}
+.accessplus-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.accessplus-panel h2{margin:0 0 2px;font-size:1.1rem;}
+.accessplus-panel-close{flex:0 0 auto;width:28px;height:28px;padding:0;border:1px solid #888;border-radius:6px;background:#fff;color:#333;font-size:14px;line-height:1;}
+.accessplus-panel-close:hover{background:#f2f2f2;}
+.accessplus-note{margin:0 0 10px;font-size:.78rem;color:#555;}
+.accessplus-group{margin:10px 0 4px;font-size:.85rem;font-weight:700;color:var(--accessplus-accent);border-top:1px solid #eee;padding-top:8px;}
+.accessplus-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;flex-wrap:wrap;}
+.accessplus-row > span{flex:1 1 auto;min-width:120px;}
+.accessplus-panel button{font:inherit;cursor:pointer;}
+.accessplus-step button,.accessplus-align button{padding:6px 10px;border:1px solid var(--accessplus-accent);background:#fff;color:var(--accessplus-accent);border-radius:6px;}
+.accessplus-align button[aria-pressed="true"]{background:var(--accessplus-accent);color:#fff;}
+.accessplus-step,.accessplus-align{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.accessplus-step output{min-width:64px;text-align:center;font-weight:700;}
+
+/* toggle switch */
+.accessplus-switch{position:relative;width:48px;height:26px;border-radius:13px;border:none;background:#c4c4c4;padding:0;flex:0 0 auto;transition:background .15s;}
+.accessplus-switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4);transition:left .15s;}
+.accessplus-switch[aria-pressed="true"]{background:var(--accessplus-accent);}
+.accessplus-switch[aria-pressed="true"]::after{left:25px;}
+
+.accessplus-swatches{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0;}
+.accessplus-swatch{width:24px;height:24px;border-radius:50%;border:1px solid #999;cursor:pointer;padding:0;}
+.accessplus-swatch.accessplus-clear{background:#fff;color:#333;border-style:dashed;width:auto;border-radius:6px;padding:2px 8px;}
+.accessplus-panel select{font:inherit;max-width:170px;padding:5px;border:1px solid #888;border-radius:6px;}
+.accessplus-reset{width:100%;margin-top:12px;padding:8px;border:1px solid #888;background:#fff;color:#333;border-radius:6px;}
+#accessplus-toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:2147483647;background:#111;color:#fff;padding:10px 16px;border-radius:8px;font:14px sans-serif;max-width:90vw;}
+
+/* ── Reading magnifier + guide ─────────────────────────────────── */
+#accessplus-magnifier{position:fixed;z-index:2147483647;pointer-events:none;max-width:60ch;
+  background:#fffde7;color:#111;border:2px solid var(--accessplus-accent);border-radius:6px;padding:8px 12px;
+  font-size:24px;line-height:1.4;box-shadow:0 4px 16px rgba(0,0,0,.3);display:none;}
+#accessplus-guide{position:fixed;z-index:2147483647;left:0;right:0;height:2.4em;pointer-events:none;
+  background:rgba(255,235,59,.18);border-top:2px solid rgba(0,0,0,.55);border-bottom:2px solid rgba(0,0,0,.55);display:none;}
+
+/* ── Effects ───────────────────────────────────────────────────── */
+html.accessplus-readfont body,html.accessplus-readfont p,html.accessplus-readfont li,html.accessplus-readfont a,
+html.accessplus-readfont span,html.accessplus-readfont td,html.accessplus-readfont h1,html.accessplus-readfont h2,
+html.accessplus-readfont h3,html.accessplus-readfont h4,html.accessplus-readfont h5,html.accessplus-readfont h6,
+html.accessplus-readfont label,html.accessplus-readfont button,html.accessplus-readfont input,html.accessplus-readfont textarea{
+  font-family:Verdana,Tahoma,"Segoe UI",sans-serif !important;
+}
+html.accessplus-dysfont body,html.accessplus-dysfont p,html.accessplus-dysfont li,html.accessplus-dysfont a,
+html.accessplus-dysfont span,html.accessplus-dysfont td,html.accessplus-dysfont h1,html.accessplus-dysfont h2,
+html.accessplus-dysfont h3,html.accessplus-dysfont h4,html.accessplus-dysfont h5,html.accessplus-dysfont h6,
+html.accessplus-dysfont label,html.accessplus-dysfont button{
+  font-family:"OpenDyslexic","Comic Sans MS",Verdana,sans-serif !important;letter-spacing:.03em !important;
+}
+/* restore icon fonts (Material/FontAwesome ligatures + icon elements) */
+html.accessplus-readfont i,html.accessplus-readfont .fa,html.accessplus-readfont [class*="icon"],
+html.accessplus-readfont [class*="fa-"],html.accessplus-readfont [class*="material-icons"],
+html.accessplus-dysfont i,html.accessplus-dysfont .fa,html.accessplus-dysfont [class*="icon"],
+html.accessplus-dysfont [class*="fa-"],html.accessplus-dysfont [class*="material-icons"]{font-family:revert !important;letter-spacing:normal !important;}
+
+html.accessplus-hltitles h1,html.accessplus-hltitles h2,html.accessplus-hltitles h3,
+html.accessplus-hltitles h4,html.accessplus-hltitles h5,html.accessplus-hltitles h6{
+  outline:2px dashed var(--accessplus-accent) !important;outline-offset:2px;background:rgba(29,78,216,.06) !important;
+}
+html.accessplus-hllinks a{text-decoration:underline !important;outline:1px solid var(--accessplus-accent) !important;outline-offset:1px;}
+
+/* Contrast modes (dark/light/highcontrast) are mutually exclusive — enforced in
+   JS. Monochrome (grayscale) stacks on top. The widget lives under <html>
+   (outside <body>), so `body *` rules never touch it — no need to exclude it. */
+html.accessplus-mono body{filter:grayscale(1);}
+
+/* dark = invert the page (body), then counter-invert media */
+html.accessplus-dark body{background:#fff !important;filter:invert(1) hue-rotate(180deg);}
+html.accessplus-dark img,html.accessplus-dark video,html.accessplus-dark picture,html.accessplus-dark iframe,
+html.accessplus-dark [style*="background-image"]{filter:invert(1) hue-rotate(180deg);}
+
+/* light = bright, high-readability: force a white background + black text on the
+   WHOLE page (not just body) so theme sections with their own dark background
+   become readable too. `background` shorthand also drops background images. */
+html.accessplus-light body,html.accessplus-light body *{background:#fff !important;color:#000 !important;}
+html.accessplus-light body a{color:#0036c7 !important;}
+html.accessplus-light body img,html.accessplus-light body picture,html.accessplus-light body video,html.accessplus-light body svg{filter:none !important;}
+
+/* high contrast = classic black background, yellow text, cyan links */
+html.accessplus-highcontrast body,html.accessplus-highcontrast body *{background:#000 !important;color:#ff0 !important;border-color:#ff0 !important;}
+html.accessplus-highcontrast body a{color:#0ff !important;}
+html.accessplus-highcontrast body img,html.accessplus-highcontrast body picture,html.accessplus-highcontrast body video{filter:none !important;}
+
+html.accessplus-stopanim *,html.accessplus-stopanim *::before,html.accessplus-stopanim *::after{
+  animation-duration:.001ms !important;animation-iteration-count:1 !important;
+  transition-duration:.001ms !important;scroll-behavior:auto !important;
+}
+/* Hide content images + inline url() backgrounds only — keep CSS gradients
+   (linear-/radial-gradient are also background-image, but are design, not photos). */
+html.accessplus-hideimg img,html.accessplus-hideimg picture,html.accessplus-hideimg video{visibility:hidden !important;}
+html.accessplus-hideimg [style*="url("]{background-image:none !important;}
+
+html.accessplus-bigcursor,html.accessplus-bigcursor *{
+  cursor:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"><path d="M4 2l16 9-7 1 4 8-3 1-4-8-6 4z" fill="black" stroke="white" stroke-width="1.2"/></svg>') 2 2,auto !important;
+}
+
+html.accessplus-focus :focus,html.accessplus-focus :focus-visible{outline:3px solid #e74c3c !important;outline-offset:2px !important;box-shadow:0 0 0 3px rgba(231,76,60,.4) !important;}
+
+html.accessplus-align-left body,html.accessplus-align-left p,html.accessplus-align-left li,html.accessplus-align-left td,
+html.accessplus-align-left h1,html.accessplus-align-left h2,html.accessplus-align-left h3,html.accessplus-align-left h4,html.accessplus-align-left h5,html.accessplus-align-left h6{text-align:left !important;}
+html.accessplus-align-center body,html.accessplus-align-center p,html.accessplus-align-center li,html.accessplus-align-center td,
+html.accessplus-align-center h1,html.accessplus-align-center h2,html.accessplus-align-center h3,html.accessplus-align-center h4,html.accessplus-align-center h5,html.accessplus-align-center h6{text-align:center !important;}
+html.accessplus-align-right body,html.accessplus-align-right p,html.accessplus-align-right li,html.accessplus-align-right td,
+html.accessplus-align-right h1,html.accessplus-align-right h2,html.accessplus-align-right h3,html.accessplus-align-right h4,html.accessplus-align-right h5,html.accessplus-align-right h6{text-align:right !important;}
+
+html.accessplus-hoverhighlight .accessplus-hovered{outline:3px solid #ffbf47 !important;outline-offset:1px;}
+.accessplus-bionic-b{font-weight:700;}

@@ -1,0 +1,13 @@
+<?php $this->extend('block_unsearchable'); ?>
+
+<?php $this->block('content'); ?>
+  <nav class="accessplus-simple-nav" aria-label="<?= htmlspecialchars(\VTInnovations\AccessPlus\I18n\Text::get('simple_switch.nav_label'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+    <ul>
+      <?php foreach ($this->options as $opt): ?>
+        <li>
+          <a href="#" data-accessplus-register="<?= $opt['register'] ?>"><?= $opt['label'] ?></a>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+  </nav>
+<?php $this->endblock(); ?>
