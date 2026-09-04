@@ -102,6 +102,40 @@ final class RegistrationStoreTest extends TestCase
         self::assertNotNull($store->read(6));
     }
 
+    public function testTombstoneSurvivesRemoveAndKeepsItsVersion(): void
+    {
+        $store = new RegistrationStore($this->projectDir);
+        $store->commit(5, '{"v":10}', ['license_version' => 10], static fn () => null, true);
+
+        self::assertNotNull($store->readTombstone(5));
+        self::assertSame(10, $store->readTombstone(5)['version']);
+
+        $store->remove(5);
+
+        self::assertNull($store->read(5), 'The live state is cleared.');
+        self::assertNotNull($store->readTombstone(5), 'The revocation tombstone is NOT shed by "remove".');
+    }
+
+    public function testCommitBelowOrEqualToTheTombstoneVersionIsRejected(): void
+    {
+        $store = new RegistrationStore($this->projectDir);
+        $store->commit(5, '{"v":20}', ['license_version' => 20], static fn () => null, true);
+
+        $this->expectException(\RuntimeException::class);
+        $store->commit(5, '{"v":20}', ['license_version' => 20], static fn () => null);
+    }
+
+    public function testAStrictlyNewerVersionSupersedesTheTombstone(): void
+    {
+        $store = new RegistrationStore($this->projectDir);
+        $store->commit(5, '{"v":20}', ['license_version' => 20], static fn () => null, true);
+        $store->commit(5, '{"v":21}', ['license_version' => 21], static fn () => null);
+
+        $read = $store->read(5);
+        self::assertNotNull($read);
+        self::assertSame('{"v":21}', $read['bytes']);
+    }
+
     public function testStateLivesInThePrivateStateDirectory(): void
     {
         (new RegistrationStore($this->projectDir))->commit(5, '{"v":1}', ['license_version' => 1], static fn () => null);

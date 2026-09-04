@@ -237,6 +237,35 @@ Der Schlüssel wird nie wieder angezeigt und verlässt den Server nur Richtung
 V-T.ONE. Die Bedienung ist reines Contao-Formular (POST + Request-Token +
 Seitenrechte), ohne eigenes JavaScript.
 
+### Widerruf und Domain-Umzug
+
+Ein Lizenzstand kann auch **entzogen** werden. V-T.ONE signiert dann einen
+`revoked`- (bzw. `expired`-) Zustand und liefert ihn wie jede andere
+Aktualisierung aus — die äußere Operation bleibt `license_update`, es gibt
+keinen separaten „Deaktivieren"-Befehl. Der Client trennt *Paket-Echtheit*
+(„stammt das von V-T.ONE?") von *Berechtigung* („was darf dieser Startpunkt
+jetzt?"): ein vollständig echtes Paket kann trotzdem „kein Pro mehr" bedeuten.
+Ein entzogener Zustand deaktiviert die Bundle-Funktionen für diesen Startpunkt;
+Contao verhält sich wieder wie im Standard.
+
+- **Push:** V-T.ONE sendet den signierten negativen Zustand per
+  `POST /rest/api/v1/accessplus-license-updater` für den betroffenen Host. Er
+  wird als dauerhafter *Grabstein* gespeichert, der **Lizenz entfernen** und
+  das manuelle Zurückspielen einer alten `state.json` übersteht — ein
+  widerrufener Startpunkt wird nicht dadurch wieder Pro, dass eine alte
+  Lizenzdatei zurückgelegt wird. Nur ein echter, neuerer signierter Stand von
+  V-T.ONE setzt ihn wieder ein.
+- **Domain-Umzug (A → B):** dieselbe autoritative Version geht an A als
+  `revoked` und an B als `valid`; A stoppt, B startet, andere Startpunkte
+  bleiben unberührt.
+- **Lease-Fallback:** jeder geschützte Zustand trägt zusätzlich signierte
+  Felder `license_refresh_required_at` / `license_grace_until`. Kommt ein Push
+  nie an (Installation offline/abgeschottet), bestätigt ein stündlicher Cron
+  den Zustand neu, sobald die Refresh-Frist überschritten ist; nach dem
+  signierten Grace-Ende fallen die geschützten Funktionen geschlossen aus, bis
+  ein frischer gültiger Zustand vorliegt. Eine vorübergehende Netzwerkstörung
+  wird nur bis zu diesem Zeitpunkt toleriert.
+
 ### Was ohne Lizenz passiert
 
 | Bereich | Verhalten ohne gültige Lizenz |

@@ -151,12 +151,22 @@ final class InboundUpdate
 
         $evaluated = $this->status->evaluate($package->document, $rootId, $domain);
 
+        // A malformed or never-authentic record is rejected. A cryptographically
+        // authentic NEGATIVE state (revoked/expired) is NOT a failure — it is an
+        // authoritative state transition and is applied like any other update.
         if ($evaluated->state === SiteState::Invalid || $evaluated->state === SiteState::Unlicensed) {
             return $this->fail(403, $evaluated->reason);
         }
 
+        // An explicit signed revocation is additionally kept as a durable
+        // tombstone. Expiry is a normal, renew-reversible state and only needs
+        // the ordinary versioned state file.
+        $persistTombstone = SiteState::Revoked === $evaluated->state;
+
         // Rollback prevention: an older or equal version can never replace the
-        // current authenticated state.
+        // current authenticated state — this also protects a stored negative
+        // state, so a domain-transfer revocation cannot be undone by replaying
+        // an older valid package.
         $current = $this->store->read($rootId);
 
         if ($current !== null) {
@@ -175,6 +185,7 @@ final class InboundUpdate
                 $package->bytes,
                 $package->envelope,
                 fn (string $bytes, array $envelope) => $this->reader->reopen($bytes, $envelope),
+                $persistTombstone,
             );
         } catch (\Throwable) {
             return $this->fail(500, 'activation_failed');

@@ -216,6 +216,141 @@ final class SiteStatusProviderTest extends TestCase
         self::assertTrue($status->hasKey(), 'The key is kept so a refresh can be attempted.');
     }
 
+    public function testSignedRevocationIsAnAuthenticNegativeState(): void
+    {
+        $document = $this->factory->document([
+            'validation_status' => 'revoked',
+            'license_version' => 12,
+            'license_domain' => 'example.com',
+            'license_domains' => ['successor.example.org'],
+        ]);
+
+        $status = $this->provider()->evaluate($document, 5);
+
+        self::assertSame(SiteState::Revoked, $status->state);
+        self::assertFalse($status->isActive());
+        self::assertSame(12, $status->version);
+        self::assertTrue($status->hasKey());
+    }
+
+    public function testRevokedStateMayTargetAHostAbsentFromTheAuthorisedSet(): void
+    {
+        // Domain transfer / full withdrawal: this host is deliberately not in
+        // the new authorised set. That must NOT be a rejection.
+        $document = $this->factory->document([
+            'validation_status' => 'revoked',
+            'license_domain' => 'example.com',
+            'license_domains' => [],
+        ]);
+
+        self::assertSame(SiteState::Revoked, $this->provider()->evaluate($document, 5, 'example.com')->state);
+    }
+
+    public function testRevokedStateStillMustBeAddressedToThisInstallation(): void
+    {
+        $document = $this->factory->document([
+            'validation_status' => 'revoked',
+            'license_domain' => 'example.com',
+            'license_domains' => [],
+        ]);
+
+        self::assertSame('domain_mismatch', $this->provider()->evaluate($document, 5, 'staging.example.com')->reason);
+    }
+
+    public function testAnUnknownValidationStatusIsRejected(): void
+    {
+        self::assertSame('status_not_valid', $this->provider()->evaluate($this->factory->document(['validation_status' => 'suspended']), 5)->reason);
+    }
+
+    public function testLeaseGraceCutoffFailsClosed(): void
+    {
+        $document = $this->factory->document([
+            'license_refresh_required_at' => time() - 400,
+            'license_grace_until' => time() - 100,
+        ]);
+
+        $status = $this->provider()->evaluate($document, 5);
+
+        self::assertFalse($status->isActive());
+        self::assertSame(SiteState::Expired, $status->state);
+        self::assertSame('lease_expired', $status->reason);
+    }
+
+    public function testInsideTheGraceWindowTheStateStaysActiveButRefreshIsDue(): void
+    {
+        $document = $this->factory->document([
+            'license_refresh_required_at' => time() - 100,
+            'license_grace_until' => time() + 3600,
+        ]);
+
+        $status = $this->provider()->evaluate($document, 5);
+
+        self::assertTrue($status->isActive());
+        self::assertTrue($status->isRefreshDue());
+    }
+
+    public function testAMalformedLeasePolicyIsRejected(): void
+    {
+        self::assertSame('lease_policy_invalid', $this->provider()->evaluate($this->factory->document([
+            'license_refresh_required_at' => time() + 1000,
+            'license_grace_until' => time() + 100,
+        ]), 5)->reason);
+    }
+
+    public function testTombstoneOutranksARestoredOlderValidStateFile(): void
+    {
+        $provider = $this->provider();
+
+        // A durable tombstone at v20.
+        $revoked = $this->factory->document([
+            'validation_status' => 'revoked',
+            'license_version' => 20,
+            'license_domain' => 'example.com',
+            'license_domains' => [],
+        ]);
+        $bytes = $this->factory->bytes($revoked);
+        (new RegistrationStore($this->projectDir))->commit(
+            5,
+            $bytes,
+            $this->factory->envelope($bytes, 20),
+            static fn () => null,
+            true,
+        );
+
+        // An administrator restores a historically valid state file at v7
+        // straight onto disk (bypassing commit, as a backup restore would).
+        $valid = $this->factory->document(['license_version' => 7]);
+        $vb = $this->factory->bytes($valid);
+        file_put_contents(
+            $this->projectDir . '/var/accessplus/roots/5/state.json',
+            (string) json_encode(['payload_b64' => base64_encode($vb), 'integrity' => $this->factory->envelope($vb, 7), 'stored_at' => time()]),
+        );
+
+        $provider->forget(5);
+
+        self::assertSame(SiteState::Revoked, $provider->forRoot(5)->state);
+        self::assertFalse($provider->forRoot(5)->isActive());
+    }
+
+    public function testTombstoneSurvivesRemovalOfTheLiveState(): void
+    {
+        $provider = $this->provider();
+        $store = new RegistrationStore($this->projectDir);
+
+        $revoked = $this->factory->document([
+            'validation_status' => 'revoked',
+            'license_version' => 20,
+            'license_domain' => 'example.com',
+            'license_domains' => [],
+        ]);
+        $bytes = $this->factory->bytes($revoked);
+        $store->commit(5, $bytes, $this->factory->envelope($bytes, 20), static fn () => null, true);
+        $store->remove(5);
+        $provider->forget(5);
+
+        self::assertSame(SiteState::Revoked, $provider->forRoot(5)->state);
+    }
+
     public function testForeignProductIsRejected(): void
     {
         self::assertSame('foreign_product', $this->provider()->evaluate($this->factory->document(['project_slug' => 'guardian']), 5)->reason);

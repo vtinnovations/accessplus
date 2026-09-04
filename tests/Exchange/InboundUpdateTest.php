@@ -183,6 +183,82 @@ final class InboundUpdateTest extends TestCase
         self::assertSame(9, $stored['envelope']['license_version']);
     }
 
+    public function testSignedRevocationIsAppliedAsAnAuthenticUpdate(): void
+    {
+        $document = $this->factory->document([
+            'validation_status' => 'revoked',
+            'license_version' => 9,
+            'license_domain' => 'example.com',
+            'license_domains' => [],
+        ]);
+
+        $result = $this->handler()->handle($this->signedRequest($this->body([], 'req-rev', $document)));
+
+        self::assertSame(200, $result['status']);
+        self::assertSame('updated', $result['body']['status']);
+        self::assertSame(9, $result['body']['license_version']);
+
+        $store = new RegistrationStore($this->projectDir);
+        self::assertNotNull($store->readTombstone(5), 'A durable tombstone must be written.');
+        self::assertFalse($this->provider($store)->forRoot(5)->isActive());
+    }
+
+    public function testRevocationTargetingAHostRemovedFromTheAuthorisedSetIsAccepted(): void
+    {
+        // license_domain is intentionally absent from the new license_domains.
+        $document = $this->factory->document([
+            'validation_status' => 'revoked',
+            'license_version' => 9,
+            'license_domain' => 'example.com',
+            'license_domains' => ['successor.example.org'],
+        ]);
+
+        $result = $this->handler()->handle($this->signedRequest($this->body([], 'req-xfer', $document)));
+
+        self::assertSame(200, $result['status']);
+        self::assertSame('updated', $result['body']['status']);
+    }
+
+    public function testExactReplayOfARevocationIsIdempotent(): void
+    {
+        $document = $this->factory->document([
+            'validation_status' => 'revoked',
+            'license_version' => 9,
+            'license_domain' => 'example.com',
+            'license_domains' => [],
+        ]);
+        $body = $this->body([], 'req-rev2', $document);
+        $handler = $this->handler();
+
+        $handler->handle($this->signedRequest($body));
+        $again = $handler->handle($this->signedRequest($body));
+
+        self::assertSame('already_processed', $again['body']['status']);
+        self::assertSame(9, $again['body']['license_version']);
+    }
+
+    public function testRevocationCannotBeUndoneByRestoringAnOlderValidFile(): void
+    {
+        $handler = $this->handler();
+        $revoked = $this->factory->document([
+            'validation_status' => 'revoked',
+            'license_version' => 30,
+            'license_domain' => 'example.com',
+            'license_domains' => [],
+        ]);
+        $handler->handle($this->signedRequest($this->body([], 'req-rev3', $revoked)));
+
+        // Filesystem restore of a historically valid state file at v12.
+        $valid = $this->factory->document(['license_version' => 12]);
+        $vb = $this->factory->bytes($valid);
+        file_put_contents(
+            $this->projectDir . '/var/accessplus/roots/5/state.json',
+            (string) json_encode(['payload_b64' => base64_encode($vb), 'integrity' => $this->factory->envelope($vb, 12), 'stored_at' => time()]),
+        );
+
+        self::assertFalse($this->provider(new RegistrationStore($this->projectDir))->forRoot(5)->isActive());
+    }
+
     public function testGetIsAnsweredWithMethodNotAllowed(): void
     {
         $controller = new ServiceCallbackController($this->handler());
@@ -266,6 +342,25 @@ final class InboundUpdateTest extends TestCase
         }
 
         return Request::create(ServiceEndpoints::CALLBACK_PATH, 'POST', [], [], [], $headers, $raw);
+    }
+
+    /**
+     * A fresh SiteStatusProvider over the same on-disk state, as a later request
+     * would see it.
+     */
+    private function provider(RegistrationStore $store): SiteStatusProvider
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchAllAssociative')->willReturn([
+            ['id' => 5, 'dns' => 'example.com', 'language' => 'de', 'title' => 'A', 'useSSL' => 1],
+        ]);
+
+        $scope = new RootScope($connection);
+        $stack = new RequestStack();
+        $stack->push(Request::create('https://example.com/'));
+        $reader = new SealedPackageReader($this->factory->anchors());
+
+        return new SiteStatusProvider($store, $reader, new DomainInventory($scope, $stack), $scope);
     }
 
     private function handler(): InboundUpdate

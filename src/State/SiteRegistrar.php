@@ -130,6 +130,12 @@ final class SiteRegistrar
             throw new PackageRejected($evaluated->reason);
         }
 
+        // A signed revoked/expired state pulled from V-T.ONE (e.g. via the
+        // lease-refresh job, when a push never arrived) is applied as an
+        // authoritative negative state; an explicit revocation is additionally
+        // kept as the durable tombstone.
+        $persistTombstone = SiteState::Revoked === $evaluated->state;
+
         // Rollback prevention, also on the administrator path.
         $current = $this->store->read($rootId);
 
@@ -143,6 +149,7 @@ final class SiteRegistrar
                 $package->bytes,
                 $package->envelope,
                 fn (string $bytes, array $envelope) => $this->reader->reopen($bytes, $envelope),
+                $persistTombstone,
             );
         } catch (\Throwable) {
             throw new PackageRejected('activation_failed');

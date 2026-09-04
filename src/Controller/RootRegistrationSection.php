@@ -204,6 +204,8 @@ final class RootRegistrationSection
             $rows[$this->trans('license.valid_from_label')] = $this->date($status->startsAt);
             $rows[$this->trans('license.valid_until_label')] = $status->lifetime ? $this->trans('license.lifetime_label') : $this->date($status->expiresAt);
             $rows[$this->trans('license.last_checked_label')] = $this->date($status->verifiedAt);
+        } elseif ($status->state === SiteState::Revoked && $status->hasKey()) {
+            $rows[$this->trans('license.masked_key_label')] = $status->maskedKey();
         }
 
         $html = '<table class="tl_show" style="margin-bottom:10px;">';
@@ -258,6 +260,7 @@ final class RootRegistrationSection
         return match ($status->state) {
             SiteState::Active => $this->trans('license.state_active'),
             SiteState::Expired => $this->trans('license.state_expired'),
+            SiteState::Revoked => $this->trans('license.state_revoked'),
             SiteState::Invalid => $this->trans('license.state_invalid', ['reason' => $this->reasonText($status->reason)]),
             SiteState::Unlicensed => $this->trans('license.state_unlicensed'),
         };
@@ -274,7 +277,8 @@ final class RootRegistrationSection
             'no_configured_domain' => 'license.reason_no_configured_domain',
             'domain_not_configured', 'domain_binding_invalid', 'domain_mismatch' => 'license.reason_domain_mismatch',
             'package_not_permitted' => 'license.reason_package_not_permitted',
-            'expired' => 'license.reason_expired',
+            'expired', 'lease_expired' => 'license.reason_expired',
+            'revoked' => 'license.reason_revoked',
             'not_yet_valid' => 'license.reason_not_yet_valid',
             'refresh_required' => 'license.reason_refresh_required',
             'version_rejected' => 'license.reason_version_rejected',

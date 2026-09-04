@@ -182,7 +182,11 @@ final class ExchangeClient
             throw new PackageRejected('clock_skew_rejected');
         }
 
-        if (($payload['status'] ?? null) !== 'valid') {
+        // `valid` is the positive case; `revoked` and `expired` are authentic
+        // negative states the client must still apply (a lease refresh is how an
+        // installation that missed the push learns it has been withdrawn). Any
+        // other status is a genuine denial.
+        if (!\in_array($payload['status'] ?? null, ['valid', 'revoked', 'expired'], true)) {
             $this->log($operation, 'service_denied', $status, $started, null, null);
 
             throw new PackageRejected('service_denied');

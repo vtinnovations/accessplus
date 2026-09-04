@@ -241,6 +241,32 @@ The key is never shown again and leaves the server only toward V-T.ONE.
 Operation is a plain Contao form (POST + request token + page permissions),
 with no custom JavaScript.
 
+### Revocation and domain transfer
+
+A licence state can also be **withdrawn**. V-T.ONE signs a `revoked` (or
+`expired`) state and delivers it exactly like any other update — the outer
+operation stays `license_update`; there is no separate "disable" verb. The
+client separates *packet authenticity* ("did V-T.ONE issue this?") from
+*entitlement outcome* ("what may this root do now?"): a fully authentic packet
+can still say "no longer Pro". A withdrawn state disables the bundle's features
+for that root and Contao's default behaviour returns.
+
+- **Push:** V-T.ONE POSTs the signed negative state to
+  `POST /rest/api/v1/accessplus-license-updater` for the affected host. It is
+  stored as a durable *tombstone* that survives **Remove licence** and a
+  hand-restored backup of an older `state.json` — a revoked root cannot be
+  brought back to Pro by putting an old licence file back on disk. Only a
+  genuinely newer signed state from V-T.ONE reinstates it.
+- **Domain transfer (A → B):** the same authoritative version is delivered to A
+  as `revoked` and to B as `valid`; A's features stop, B's start, other roots
+  are untouched.
+- **Lease fallback:** every protected state also carries signed
+  `license_refresh_required_at` / `license_grace_until`. If a push never
+  arrives (installation offline / firewalled), an hourly cron re-confirms the
+  state once the refresh deadline passes; after the signed grace cutoff the
+  protected features fail closed until a fresh valid state is obtained. A
+  transient network failure only tolerates until that cutoff.
+
 ### What happens without a licence
 
 | Area | Behaviour without a valid licence |

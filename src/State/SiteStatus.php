@@ -48,6 +48,8 @@ final class SiteStatus
         public readonly array $configuredDomains,
         public readonly int $maxDomains,
         private readonly string $licenseKey,
+        public readonly ?int $refreshRequiredAt = null,
+        public readonly ?int $graceUntil = null,
     ) {
     }
 
@@ -72,6 +74,45 @@ final class SiteStatus
     }
 
     /**
+     * An AUTHENTIC negative state: the issuer signed a withdrawal (`revoked`) or
+     * a lapsed window (`expired`). Not a failure — entitlement is simply off.
+     * The version and (masked) key are kept so the authoritative store can
+     * refuse any lower version afterwards and the admin screen can still say
+     * which licence this concerns.
+     *
+     * @param list<string> $signedDomains
+     * @param list<string> $configuredDomains
+     */
+    public static function withdrawn(
+        int $rootId,
+        SiteState $state,
+        string $reason,
+        int $version,
+        ?string $operationDomain,
+        array $signedDomains,
+        array $configuredDomains,
+        string $key,
+    ): self {
+        return new self(
+            $rootId,
+            $state,
+            $reason,
+            '',
+            $version,
+            false,
+            null,
+            null,
+            null,
+            null,
+            $operationDomain,
+            $signedDomains,
+            $configuredDomains,
+            0,
+            $key,
+        );
+    }
+
+    /**
      * @param list<string> $signedDomains
      * @param list<string> $configuredDomains
      */
@@ -91,6 +132,8 @@ final class SiteStatus
         array $configuredDomains,
         int $maxDomains,
         string $licenseKey,
+        ?int $refreshRequiredAt = null,
+        ?int $graceUntil = null,
     ): self {
         return new self(
             $rootId,
@@ -108,7 +151,19 @@ final class SiteStatus
             $configuredDomains,
             $maxDomains,
             $licenseKey,
+            $refreshRequiredAt,
+            $graceUntil,
         );
+    }
+
+    /**
+     * True once the signed refresh deadline has passed: the lease says the
+     * client must re-confirm entitlement with V-T.ONE. Enforcement (fail-closed)
+     * happens only at {@see graceUntil}; this only tells the refresh job to act.
+     */
+    public function isRefreshDue(?int $now = null): bool
+    {
+        return $this->refreshRequiredAt !== null && ($now ?? time()) >= $this->refreshRequiredAt;
     }
 
     /**

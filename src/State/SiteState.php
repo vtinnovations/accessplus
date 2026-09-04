@@ -14,9 +14,15 @@ declare(strict_types=1);
 namespace VTInnovations\AccessPlus\State;
 
 /**
- * The four states a site root can be in. There is no "grace", no "trial" and no
+ * The states a site root can be in. There is no "grace", no "trial" and no
  * "free" member: this product is Pro-only, so anything that is not `Active`
  * means the bundle behaves exactly like it is not installed for that root.
+ *
+ * `Revoked` and `Expired` are AUTHENTIC negative states — the issuer signed
+ * them and the client applied them. They are not failures; they are the answer
+ * to "what may this installation do now?" (nothing), which is a different
+ * question from "did V-T.ONE issue this state?" (yes). `Invalid` is the failure
+ * case: a record that never authenticated at all.
  */
 enum SiteState: string
 {
@@ -28,6 +34,9 @@ enum SiteState: string
 
     /** Authentic state whose validity window has ended. No fallback exists. */
     case Expired = 'expired';
+
+    /** Authentic state that withdraws entitlement (explicit signed revocation). */
+    case Revoked = 'revoked';
 
     /** Present but not acceptable: tampered, wrong scope, wrong package, stale schema. */
     case Invalid = 'invalid';

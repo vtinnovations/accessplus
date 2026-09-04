@@ -256,6 +256,13 @@ services:
         tags:
             - { name: contao.cronjob, interval: daily }
 
+    # Lease-refresh fallback: re-confirms protected state with V-T.ONE once the
+    # signed refresh deadline has passed, so revocation still takes effect when a
+    # server push never reaches this installation.
+    VTInnovations\AccessPlus\Cron\LicenseRefreshCron:
+        tags:
+            - { name: contao.cronjob, interval: hourly }
+
     VTInnovations\AccessPlus\Command\MonitorCommand:
         tags:
             - { name: console.command }

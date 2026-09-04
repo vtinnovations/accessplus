@@ -81,6 +81,7 @@ $lang['license']['confirm_remove_label'] = 'Entfernen bestätigen';
 
 $lang['license']['state_active'] = 'aktiv';
 $lang['license']['state_expired'] = 'abgelaufen — die Funktionen sind für diesen Startpunkt deaktiviert';
+$lang['license']['state_revoked'] = 'widerrufen — die Funktionen sind für diesen Startpunkt deaktiviert';
 $lang['license']['state_invalid'] = 'nicht gültig: %reason%';
 $lang['license']['state_unlicensed'] = 'keine Lizenz hinterlegt';
 
@@ -89,6 +90,7 @@ $lang['license']['reason_no_configured_domain'] = 'Für diesen Startpunkt ist ke
 $lang['license']['reason_domain_mismatch'] = 'Die Lizenz gilt nicht für die Domain dieses Startpunkts.';
 $lang['license']['reason_package_not_permitted'] = 'Dieses Lizenzpaket ist für dieses Produkt nicht zugelassen.';
 $lang['license']['reason_expired'] = 'Die Lizenz ist abgelaufen.';
+$lang['license']['reason_revoked'] = 'Die Lizenz wurde für diesen Startpunkt entzogen.';
 $lang['license']['reason_not_yet_valid'] = 'Die Lizenz ist noch nicht gültig.';
 $lang['license']['reason_refresh_required'] = 'Die hinterlegte Lizenz muss einmalig aktualisiert werden.';
 $lang['license']['reason_version_rejected'] = 'Es liegt bereits ein neuerer Lizenzstand vor.';

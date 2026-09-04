@@ -81,6 +81,7 @@ $lang['license']['confirm_remove_label'] = 'Confirm removal';
 
 $lang['license']['state_active'] = 'active';
 $lang['license']['state_expired'] = 'expired — the features are disabled for this site root';
+$lang['license']['state_revoked'] = 'revoked — the features are disabled for this site root';
 $lang['license']['state_invalid'] = 'not valid: %reason%';
 $lang['license']['state_unlicensed'] = 'no licence stored';
 
@@ -89,6 +90,7 @@ $lang['license']['reason_no_configured_domain'] = 'No domain is configured for t
 $lang['license']['reason_domain_mismatch'] = 'The licence does not apply to this site root\'s domain.';
 $lang['license']['reason_package_not_permitted'] = 'This licence package is not permitted for this product.';
 $lang['license']['reason_expired'] = 'The licence has expired.';
+$lang['license']['reason_revoked'] = 'The licence has been withdrawn for this site root.';
 $lang['license']['reason_not_yet_valid'] = 'The licence is not yet valid.';
 $lang['license']['reason_refresh_required'] = 'The stored licence needs a one-time update.';
 $lang['license']['reason_version_rejected'] = 'A newer licence state already exists.';

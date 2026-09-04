@@ -142,13 +142,24 @@ final class SiteStatusProvider
             return $reject('key_missing');
         }
 
-        if (($document['validation_status'] ?? null) !== 'valid') {
-            return $reject('status_not_valid');
-        }
-
         $version = $document['license_version'] ?? null;
         if (!\is_int($version) || $version < 1) {
             return $reject('version_invalid');
+        }
+
+        // Authenticity is already established by the caller. The signed
+        // `validation_status` now decides the ENTITLEMENT OUTCOME, which is a
+        // separate question. A signed `revoked`/`expired` state is authentic and
+        // is applied as an authoritative negative state — never treated as a
+        // verification failure.
+        $statusField = $document['validation_status'] ?? null;
+
+        if ($statusField === 'revoked' || $statusField === 'expired') {
+            return $this->evaluateWithdrawn($document, $rootId, $expectedDomain, $configured, $key, $version, $statusField);
+        }
+
+        if ($statusField !== 'valid') {
+            return $reject('status_not_valid');
         }
 
         // Pro only. A free/trial package is not degraded to "some access" here —
@@ -234,6 +245,28 @@ final class SiteStatusProvider
             $reason = 'expired';
         }
 
+        // Signed lease policy. Optional — states signed before it was introduced
+        // simply omit both fields — but when present it is trusted entitlement
+        // policy and must be well-formed.
+        $refreshRequiredAt = $document['license_refresh_required_at'] ?? null;
+        $graceUntil = $document['license_grace_until'] ?? null;
+
+        if (($refreshRequiredAt !== null && !\is_int($refreshRequiredAt))
+            || ($graceUntil !== null && !\is_int($graceUntil))
+            || (\is_int($refreshRequiredAt) && \is_int($graceUntil) && $graceUntil < $refreshRequiredAt)
+        ) {
+            return $reject('lease_policy_invalid');
+        }
+
+        if ($state === SiteState::Active && \is_int($graceUntil) && $now >= $graceUntil) {
+            // The lease elapsed and no fresher signed state has been obtained.
+            // Push revocation may never have reached this installation, so this
+            // is the guaranteed backstop: protected features fail closed until a
+            // newer valid signed state arrives (via refresh or push).
+            $state = SiteState::Expired;
+            $reason = 'lease_expired';
+        }
+
         return SiteStatus::of(
             $rootId,
             $state,
@@ -250,7 +283,65 @@ final class SiteStatusProvider
             $configured,
             $maxDomains,
             $key,
+            \is_int($refreshRequiredAt) ? $refreshRequiredAt : null,
+            \is_int($graceUntil) ? $graceUntil : null,
         );
+    }
+
+    /**
+     * A cryptographically authentic negative entitlement (`revoked`/`expired`).
+     *
+     * The domain rule is deliberately different from the positive one:
+     *  - `license_domain` still identifies the installation this state targets
+     *    and must be an exact canonical host equal to the delivery target;
+     *  - but it is NOT required to appear in `license_domains` — a domain
+     *    transfer removes exactly this host from the authorised set, and a full
+     *    revocation may carry an empty set. Rejecting the package because the
+     *    host is missing would turn an expected condition into a false failure.
+     *
+     * @param array<string, mixed> $document
+     * @param list<string>         $configured
+     */
+    private function evaluateWithdrawn(
+        array $document,
+        int $rootId,
+        ?string $expectedDomain,
+        array $configured,
+        string $key,
+        int $version,
+        string $statusField,
+    ): SiteStatus {
+        $reject = static fn (string $reason): SiteStatus => SiteStatus::rejected($rootId, $reason, $configured, $key, $version);
+
+        $operationDomain = \is_string($document['license_domain'] ?? null) ? (string) $document['license_domain'] : '';
+
+        if ($operationDomain === '' || $this->domains->normalize($operationDomain) !== $operationDomain) {
+            return $reject('domain_binding_invalid');
+        }
+
+        // During delivery/refresh the caller pins the host we are reachable at;
+        // the negative state must be the one addressed to this installation.
+        if ($expectedDomain !== null && !hash_equals($expectedDomain, $operationDomain)) {
+            return $reject('domain_mismatch');
+        }
+
+        // The new authorised set, when carried. Absent or empty is valid for a
+        // negative state (full revocation). Never repaired locally.
+        $signed = [];
+
+        if (\array_key_exists('license_domains', $document) && $document['license_domains'] !== []) {
+            $accepted = $this->domains->acceptSignedSet($document['license_domains']);
+
+            if ($accepted === null) {
+                return $reject('domain_set_invalid');
+            }
+
+            $signed = $accepted;
+        }
+
+        $state = $statusField === 'revoked' ? SiteState::Revoked : SiteState::Expired;
+
+        return SiteStatus::withdrawn($rootId, $state, $statusField, $version, $operationDomain, $signed, $configured, $key);
     }
 
     private function resolve(int $rootId): SiteStatus
@@ -259,21 +350,33 @@ final class SiteStatusProvider
             return SiteStatus::unlicensed($rootId, [], 'no_scope');
         }
 
+        // A durable tombstone: the last authentic negative state this root was
+        // ever told about. It survives `remove()` and a hand-restored state file,
+        // so a revoked root cannot be brought back to Pro by putting an older,
+        // historically valid license.json back on disk.
+        $tombstone = $this->verifiedTombstone($rootId);
+
         $stored = $this->store->read($rootId);
 
         if ($stored === null) {
-            return SiteStatus::unlicensed($rootId, $this->domains->forRoot($rootId));
+            return $tombstone ?? SiteStatus::unlicensed($rootId, $this->domains->forRoot($rootId));
         }
 
         try {
             $package = $this->reader->reopen($stored['bytes'], $stored['envelope']);
         } catch (PackageRejected $e) {
-            return SiteStatus::rejected($rootId, $e->category(), $this->domains->forRoot($rootId));
+            return $tombstone ?? SiteStatus::rejected($rootId, $e->category(), $this->domains->forRoot($rootId));
         } catch (\Throwable) {
-            return SiteStatus::rejected($rootId, 'state_unreadable', $this->domains->forRoot($rootId));
+            return $tombstone ?? SiteStatus::rejected($rootId, 'state_unreadable', $this->domains->forRoot($rootId));
         }
 
         $status = $this->evaluate($package->document, $rootId);
+
+        // The stored document only wins if it is a strictly newer authoritative
+        // version than the tombstone (a genuine re-issue / reinstatement).
+        if ($tombstone !== null && $status->version <= $tombstone->version) {
+            return $tombstone;
+        }
 
         // Remember a domain for the deferred invocation signal. The host the
         // current request actually came in on wins, so that a survey of all roots
@@ -285,5 +388,31 @@ final class SiteStatusProvider
         }
 
         return $status;
+    }
+
+    /**
+     * The stored tombstone, re-verified cryptographically like every other
+     * on-disk record. A tombstone that no longer verifies is not trusted (it
+     * can only ever withhold entitlement, so failing it open is safe); a valid
+     * one that resolves to a negative state is returned as the authoritative
+     * answer for this root.
+     */
+    private function verifiedTombstone(int $rootId): ?SiteStatus
+    {
+        $raw = $this->store->readTombstone($rootId);
+
+        if ($raw === null) {
+            return null;
+        }
+
+        try {
+            $package = $this->reader->reopen($raw['bytes'], $raw['envelope']);
+        } catch (\Throwable) {
+            return null;
+        }
+
+        $status = $this->evaluate($package->document, $rootId);
+
+        return $status->state === SiteState::Revoked ? $status : null;
     }
 }
