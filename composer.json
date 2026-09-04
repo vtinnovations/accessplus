@@ -2,11 +2,21 @@
     "name": "vtinnovations/accessplus",
     "type": "contao-bundle",
     "description": "Native Barrierefreiheits-Reparatur & -Prüfung im Contao-Backend (BFSG). Pruefen, erzeugen, absichern, Monitoring und Pflichtdokumente.",
-    "keywords": ["contao", "accessibility", "a11y", "bfsg", "wcag", "barrierefreiheit"],
+    "keywords": [
+        "contao",
+        "accessibility",
+        "a11y",
+        "bfsg",
+        "wcag",
+        "barrierefreiheit"
+    ],
+    "homepage": "https://www.v-t.one/produkt/vt-accessplus",
     "license": "LGPL-3.0-or-later",
     "authors": [
         {
-            "name": "VT Innovations Team"
+            "name": "VT Innovations Team",
+            "homepage": "https://www.v-t.one",
+            "role": "Developer"
         }
     ],
     "require": {
