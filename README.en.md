@@ -47,24 +47,36 @@ A backend hub "**Accessibility**" with tabs bundles everything:
 | **PDF check** | Detects missing title / missing language / missing tags in PDFs (detection + guidance, without modifying the file) |
 | **Monitoring** | Repeats checks automatically: CLI command, Contao cron (daily, poor-man's cron — no system cron required) and an optional on-save hook — throttled, with score trend |
 | **Audit & undo** | Every automatic change is logged (who/when/before/after) and can be undone |
-| **Licence** | Pro licence **per root page**, bound to its **exact** hostname; managed in the root page settings |
+| **Licence** | Demo / Yearly / Lifetime licence **per root page**, bound to its **exact** hostname; managed in the root page settings |
 
 ---
 
 ## Feature status
 
-The bundle has **no** free tier: without an activated Pro licence for the
-respective root page, Contao is unchanged and all features below are off.
+The bundle has **no** anonymous free tier: without an activated licence for
+the respective root page, Contao is unchanged and all features below are off.
+There are three licence packages, all of which require a real activated,
+signed licence key:
+
+- **Demo** — deliberately limited: AI alt text up to a cumulative 25 images,
+  frontend page scan (axe-core) up to a cumulative 15 pages, and only the
+  first 30 axe issues are ever stored/shown. Every other feature below stays
+  off under Demo.
+- **Yearly** — the full feature set below, while the signed licence term is
+  valid.
+- **Lifetime** — the full feature set below, permanently (no commercial
+  expiry), still fully subject to signature/domain/revocation checks.
 
 | Feature | Status |
 |---|---|
-| Database linter, frontend scan (axe-core), dashboard/score | Pro only |
-| AI alt text, ARIA names, AI subtitles, plain/easy language | Pro only, additionally **conditional** on a configured AI access |
-| Overlay (comfort widget) | Pro only |
-| Statement & feedback channel (frontend modules) | Pro only |
-| PDF check | Pro only, **conditional** on `smalot/pdfparser` (mandatory Composer dependency, always installed) |
-| Monitoring (CLI/cron/save hook) | Pro only |
-| Audit & undo | Pro only |
+| AI alt text | Demo (25 images cumulative) or full (unlimited), additionally **conditional** on a configured AI access |
+| Frontend scan (axe-core) + axe results | Demo (15 pages cumulative, first 30 issues shown) or full (unlimited) |
+| Database linter ("Scan now"), dashboard/score, ARIA names, AI subtitles, plain/easy language | Yearly/Lifetime only |
+| Overlay (comfort widget) | Yearly/Lifetime only |
+| Statement & feedback channel (frontend modules) | Yearly/Lifetime only |
+| PDF check | Yearly/Lifetime only, **conditional** on `smalot/pdfparser` (mandatory Composer dependency, always installed) |
+| Monitoring (CLI/cron/save hook) | Yearly/Lifetime only |
+| Audit & undo | Applies to whichever change was actually made above |
 
 ---
 
@@ -240,11 +252,13 @@ scan, PHP time limits on large subtitle batches): see
 
 Code: **LGPL-3.0-or-later**.
 
-Usage licence: **Pro — per root page and exact hostname**, obtained through
-V-T.ONE. There is no trial, free or grace tier: without an activated,
-cryptographically verified Pro licence, the features are off for the
-respective root page. It is managed under *Site structure → edit root page →
-AccessPlus Licence management*.
+Usage licence: **Demo, Yearly or Lifetime — per root page and exact
+hostname**, obtained through V-T.ONE. There is no anonymous free or grace
+tier: all three packages require a real activated, cryptographically
+verified licence, or the features are off for the respective root page
+(see the "Feature status" section above for what each package unlocks). It
+is managed under *Site structure → edit root page → AccessPlus Licence
+management*.
 
 `www.example.com` and `example.com` are treated as **different** hosts; each
 root page needs the domain it is actually configured with in Contao.

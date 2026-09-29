@@ -51,7 +51,7 @@ final class SimpleSwitchInjector
         $rootId = (int) $page->rootId;
 
         // Scope gate: an unlicensed root gets Contao's untouched page.
-        if (!$this->siteStatus->isActive($rootId)) {
+        if (!$this->siteStatus->isFullyLicensed($rootId)) {
             return;
         }
 

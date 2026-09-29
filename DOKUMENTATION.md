@@ -210,10 +210,29 @@ im Einstellungen-Tab gibt es bewusst keine zweite Lizenzverwaltung.
 
 ### Modell
 
-- **Pro-only.** Es gibt **keine** Trial-, Free-, Kulanz- oder Grace-Stufe und
-  keinen „läuft schon irgendwie"-Zustand. Ohne aktivierte, gültige Pro-Lizenz
-  sind für den betreffenden Startpunkt **alle** Funktionen des Bundles aus —
-  Contao verhält sich dann exakt so, als wäre es nicht installiert.
+- **Drei Pakete, jedes davon lizenzpflichtig.** Es gibt **keine** anonyme
+  Gratis-Stufe, keinen lokal erzeugten Trial und keinen „läuft schon
+  irgendwie"-Zustand. Ohne aktivierte, gültige Lizenz sind für den
+  betreffenden Startpunkt **alle** Funktionen des Bundles aus — Contao
+  verhält sich dann exakt so, als wäre es nicht installiert.
+  - **Demo** — eine echte aktivierte, signierte Lizenz, aber absichtlich eng
+    begrenzt: KI-Alt-Text bis **kumulativ 25 Bilder**, Frontend-Seitenscan
+    (axe) bis **kumulativ 15 Seiten**, und von den gefundenen axe-Befunden
+    werden serverseitig nur die **ersten 30** überhaupt gespeichert/angezeigt.
+    Jede andere Bundle-Funktion (ARIA-Fixes, PDF-Prüfung, Untertitel,
+    Einfache Sprache, Komfort-Overlay, Barrierefreiheits­erklärung,
+    Feedback-Kanal, Monitoring, der Datenbank-Scan „Jetzt scannen") bleibt in
+    Demo **aus**. Die Zähler sind dauerhaft (Datei je Startpunkt bzw.
+    installationsweit für den Alt-Text-Zähler), werden **nie** durch
+    Logout/Login, Cache leeren, Session-Ende oder erneute Eingabe desselben
+    Schlüssels zurückgesetzt, und sind gegen gleichzeitige Zugriffe
+    (Dateisperre) abgesichert.
+  - **Jährlich** — voller Funktionsumfang mit signiertem Ablaufdatum. Nach
+    Ablauf werden die lizenzpflichtigen Funktionen deaktiviert; es gibt
+    **keinen** stillschweigenden Rückfall auf Demo.
+  - **Lifetime** — voller Funktionsumfang dauerhaft, ohne Ablaufdatum.
+    Unterliegt genauso wie jedes andere Paket der Signatur-, Domain- und
+    Widerrufsprüfung.
 - **Eine Lizenz je Startpunkt (tl_page type=root).** Der Zustand wird pro
   Startpunkt gespeichert; eine Lizenz aktiviert **nie** einen anderen Startpunkt.
 - **Exakte Hostbindung.** `example.com`, `www.example.com` und
@@ -239,44 +258,51 @@ Seitenrechte), ohne eigenes JavaScript.
 
 ### Widerruf und Domain-Umzug
 
-Ein Lizenzstand kann auch **entzogen** werden. V-T.ONE signiert dann einen
-`revoked`- (bzw. `expired`-) Zustand und liefert ihn wie jede andere
-Aktualisierung aus — die äußere Operation bleibt `license_update`, es gibt
-keinen separaten „Deaktivieren"-Befehl. Der Client trennt *Paket-Echtheit*
-(„stammt das von V-T.ONE?") von *Berechtigung* („was darf dieser Startpunkt
-jetzt?"): ein vollständig echtes Paket kann trotzdem „kein Pro mehr" bedeuten.
-Ein entzogener Zustand deaktiviert die Bundle-Funktionen für diesen Startpunkt;
-Contao verhält sich wieder wie im Standard.
+Ein Lizenzstand kann auch **entzogen** werden — V-T.ONE liefert dazu einen
+neuen, ebenfalls vollständig signierten Zustand aus, kein separater
+„Deaktivieren"-Befehl. Ein technisch gültiges, echtes Update kann daher
+trotzdem bedeuten, dass der betreffende Startpunkt keine kostenpflichtigen
+Funktionen mehr freigeschaltet bekommt. Ein entzogener Zustand deaktiviert die
+Bundle-Funktionen für diesen Startpunkt; Contao verhält sich wieder wie im
+Standard.
 
-- **Push:** V-T.ONE sendet den signierten negativen Zustand per
-  `POST /rest/api/v1/accessplus-license-updater` für den betroffenen Host. Er
-  wird als dauerhafter *Grabstein* gespeichert, der **Lizenz entfernen** und
-  das manuelle Zurückspielen einer alten `state.json` übersteht — ein
-  widerrufener Startpunkt wird nicht dadurch wieder Pro, dass eine alte
-  Lizenzdatei zurückgelegt wird. Nur ein echter, neuerer signierter Stand von
+- **Push:** V-T.ONE kann einen entzogenen oder anderweitig geänderten
+  Lizenzstand aktiv an die betroffene Installation zustellen, ohne dass im
+  Backend geklickt werden muss. Der Widerruf wird dauerhaft gespeichert und
+  übersteht sowohl **Lizenz entfernen** als auch das manuelle Zurückspielen
+  einer alten, lokal gesicherten Kopie des Lizenzstands — ein widerrufener
+  Startpunkt wird nicht dadurch wieder freigeschaltet, dass eine ältere
+  Lizenzkopie zurückgelegt wird. Nur ein echter, neuerer signierter Stand von
   V-T.ONE setzt ihn wieder ein.
-- **Domain-Umzug (A → B):** dieselbe autoritative Version geht an A als
-  `revoked` und an B als `valid`; A stoppt, B startet, andere Startpunkte
-  bleiben unberührt.
-- **Lease-Fallback:** jeder geschützte Zustand trägt zusätzlich signierte
-  Felder `license_refresh_required_at` / `license_grace_until`. Kommt ein Push
-  nie an (Installation offline/abgeschottet), bestätigt ein stündlicher Cron
-  den Zustand neu, sobald die Refresh-Frist überschritten ist; nach dem
-  signierten Grace-Ende fallen die geschützten Funktionen geschlossen aus, bis
-  ein frischer gültiger Zustand vorliegt. Eine vorübergehende Netzwerkstörung
-  wird nur bis zu diesem Zeitpunkt toleriert.
+- **Domain-Umzug (A → B):** V-T.ONE kann eine Lizenz von einem Startpunkt auf
+  einen anderen (auch installationsübergreifend) umziehen; der alte Host
+  stoppt, der neue startet, andere Startpunkte bleiben unberührt.
+- **Lease-Fallback:** jeder geschützte Zustand trägt zusätzlich eine
+  signierte Frist, bis zu der er ohne erneute Rückfrage bei V-T.ONE gilt.
+  Kommt ein Push nie an (Installation offline/abgeschottet), fragt ein
+  stündlicher Cron den Zustand nach Ablauf dieser Frist erneut ab; bleibt auch
+  das erfolglos, fallen die geschützten Funktionen nach einer weiteren,
+  ebenfalls signierten Karenzzeit geschlossen aus, bis ein frischer gültiger
+  Zustand vorliegt. Eine vorübergehende Netzwerkstörung wird nur bis zu diesem
+  Zeitpunkt toleriert.
 
-### Was ohne Lizenz passiert
+### Was ohne (oder mit nur Demo-)Lizenz passiert
 
-| Bereich | Verhalten ohne gültige Lizenz |
-|---|---|
-| Backend-Hub „Barrierefreiheit" | Hinweis statt Werkzeugen; nur lizenzierte Startpunkte sind wählbar |
-| Voll-Scan / Datenbank-Analyse / ARIA-Ingest / Vorschau | HTTP 403, keine Datenänderung |
-| Datenbank-Linter | schreibt keine Befunde für unlizenzierte Startpunkte und ändert deren vorhandene Befunde nicht |
-| CLI-Commands, Cron, Monitoring | brechen mit Hinweis ab |
-| Overlay, Einfache Sprache, Untertitel-`<track>`, ARIA-Injektion | keine Ausgabe, Contao-Standardseite |
-| Frontend-Module (Erklärung, Meldekanal, Umschalter) | rendern nichts |
-| Meldungen-Posteingang | nur lesbar — eingegangene Meldungen werden nie versteckt oder gelöscht |
+| Bereich | Ohne gültige Lizenz | Mit **Demo**-Lizenz |
+|---|---|---|
+| Backend-Hub „Barrierefreiheit" | Hinweis statt Werkzeugen; nur lizenzierte Startpunkte sind wählbar | Hub ist erreichbar (nötig, um zu Alt-Text/Scan/Lizenz zu gelangen) |
+| KI-Alt-Text | HTTP/CLI-Abbruch, keine Generierung | funktioniert bis zum kumulativen 25-Bilder-Kontingent, danach Abbruch mit Hinweis |
+| Frontend-Seitenscan (axe) / axe-Ergebnisse | HTTP 403, keine Datenänderung | funktioniert bis zum kumulativen 15-Seiten-Kontingent; gespeicherte/angezeigte Befunde je Startpunkt serverseitig auf die ersten 30 gekappt |
+| Datenbank-Voll-Scan / Datenbank-Analyse / ARIA-Ingest / Vorschau | HTTP 403, keine Datenänderung | **ebenfalls** HTTP 403 — das sind Pro-Funktionen, kein Demo-Umfang |
+| Datenbank-Linter | schreibt keine Befunde für nicht voll-lizenzierte Startpunkte und ändert deren vorhandene Befunde nicht | dito — Demo allein zählt hierfür nicht als voll lizenziert |
+| CLI-Commands, Cron, Monitoring (außer Alt-Text-Command) | brechen mit Hinweis ab | dito |
+| Overlay, Einfache Sprache, Untertitel-`<track>`, ARIA-Injektion | keine Ausgabe, Contao-Standardseite | dito — Pro-Funktionen |
+| Frontend-Module (Erklärung, Meldekanal, Umschalter) | rendern nichts | dito |
+| Meldungen-Posteingang | nur lesbar — eingegangene Meldungen werden nie versteckt oder gelöscht | dito |
+
+Der Abschnitt „AccessPlus Licence management" selbst zeigt bei einer aktiven
+Demo-Lizenz zusätzlich den aktuellen Kontingentstand (z. B. „Demo: ALT-Bilder:
+17 / 25 verwendet").
 
 ### Datenübertragung (Transparenz)
 
@@ -307,8 +333,9 @@ Ergebnis-Kategorie, HTTP-Status, Dauer und Lizenzversion — nie die
   jeder Prüfung erneut kryptografisch verifiziert.
 - Benötigt die PHP-Erweiterung `sodium` für die Signaturprüfung. Fehlt sie,
   meldet der Abschnitt das im Klartext und aktiviert nichts.
-- Zugestellte Aktualisierungen werden serverseitig gegen ein internes
-  Wiedereinspiel-Gedächtnis geprüft. Bei mehreren Knoten (Load Balancing)
+- Zugestellte Aktualisierungen werden vor der Anwendung vollständig geprüft
+  und mehrfach zugestellte, bereits verarbeitete Aktualisierungen werden
+  erkannt und nicht doppelt angewendet. Bei mehreren Knoten (Load Balancing)
   muss `var/` zwischen den Knoten geteilt sein.
 
 ## B5. KI-Anbindung

@@ -20,10 +20,26 @@ use VTInnovations\AccessPlus\Security\SealedPackageReader;
 /**
  * Turns stored state into the immutable per-root answer the feature gates use.
  *
- * Pro-only product: the accepted package allowlist has exactly one member. There
- * is no trial, no anonymous free mode, no grace window, no "installed therefore
- * enabled" path and no local fallback — a root without an authentic, in-window,
- * domain-matched Pro record simply gets Contao's default behaviour back.
+ * Three commercial packages, all of which require a real activated, signed
+ * V-T.ONE licence — there is no anonymous free mode, no locally generated
+ * trial, no grace window, no "installed therefore enabled" path and no local
+ * fallback of any kind. A root without an authentic, in-window, domain-matched
+ * record simply gets Contao's default behaviour back:
+ *
+ *   - `demo`    — signed and activated, but deliberately narrow. {@see SiteStatus::isDemo()}
+ *                 is true; feature boundaries that are NOT one of the three
+ *                 explicitly permitted Demo operations must gate on
+ *                 {@see SiteStatus::isFullyLicensed()} instead of {@see SiteStatus::isActive()}.
+ *   - `pro` + `license_lifetime=false` — the Yearly package: full feature set
+ *                 while the signed validity window holds, no silent Demo fallback
+ *                 on expiry.
+ *   - `pro` + `license_lifetime=true`  — the Lifetime package: full feature set,
+ *                 no commercial expiry, still fully subject to signature/domain/
+ *                 revocation checks like every other package.
+ *
+ * `license_package` alone therefore only distinguishes Demo from Pro; Yearly vs.
+ * Lifetime is carried entirely in the existing signed `license_lifetime` /
+ * `license_expires_at` fields, so no new wire field was introduced for it.
  *
  * The stored record is re-verified cryptographically on EVERY evaluation (the
  * result is cached per request only), so editing the state file by hand fails at
@@ -31,8 +47,17 @@ use VTInnovations\AccessPlus\Security\SealedPackageReader;
  */
 final class SiteStatusProvider
 {
-    /** Pro-only: the complete accepted package allowlist. */
-    private const PACKAGES = ['pro'];
+    /** The complete accepted package allowlist. */
+    private const PACKAGES = ['demo', 'pro'];
+
+    /** Cumulative Demo allowance: ALT-attribute generation. */
+    public const DEMO_ALT_IMAGE_LIMIT = 25;
+
+    /** Cumulative Demo allowance: frontend page scans (and, with it, axe analysis). */
+    public const DEMO_PAGE_SCAN_LIMIT = 15;
+
+    /** Demo result truncation: administrator-visible axe issues per root. */
+    public const DEMO_AXE_ISSUE_LIMIT = 30;
 
     private const SCHEMA_VERSION = 2;
 
@@ -60,7 +85,9 @@ final class SiteStatusProvider
     }
 
     /**
-     * Convenience for the gates: "may this root use the bundle at all?".
+     * Convenience for the gates: "may this root use the bundle at all?" — true
+     * for Demo AND Pro. Do NOT use this to guard a feature outside the three
+     * explicitly permitted Demo operations; use {@see isFullyLicensed()} there.
      */
     public function isActive(int $rootId): bool
     {
@@ -86,6 +113,38 @@ final class SiteStatusProvider
     public function hasAnyActive(): bool
     {
         return $this->activeRootIds() !== [];
+    }
+
+    /**
+     * Convenience for the gates: "may this root use a Pro-only feature?" — true
+     * only for an active Pro package (Yearly or Lifetime). Every Access+
+     * capability except ALT generation, frontend page scanning and axe results
+     * must gate on this.
+     */
+    public function isFullyLicensed(int $rootId): bool
+    {
+        return $rootId > 0 && $this->forRoot($rootId)->isFullyLicensed();
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function fullyLicensedRootIds(): array
+    {
+        $out = [];
+
+        foreach ($this->rootScope->roots() as $root) {
+            if ($this->forRoot($root['id'])->isFullyLicensed()) {
+                $out[] = $root['id'];
+            }
+        }
+
+        return $out;
+    }
+
+    public function hasAnyFullyLicensed(): bool
+    {
+        return $this->fullyLicensedRootIds() !== [];
     }
 
     /**
@@ -162,8 +221,9 @@ final class SiteStatusProvider
             return $reject('status_not_valid');
         }
 
-        // Pro only. A free/trial package is not degraded to "some access" here —
-        // it is simply not a package this product accepts.
+        // Exactly two accepted wire values. Anything else (an old 'free'/'trial'
+        // vocabulary, a foreign product's tier name, a typo) is not degraded to
+        // "some access" — it is simply not a package this product accepts.
         $package = \is_string($document['license_package'] ?? null) ? strtolower((string) $document['license_package']) : '';
         if (!\in_array($package, self::PACKAGES, true)) {
             return $reject('package_not_permitted');
@@ -240,7 +300,11 @@ final class SiteStatusProvider
         }
 
         if (!$lifetime && \is_int($expiresAt) && $now >= $expiresAt) {
-            // Pro-only: an expired record has no free fallback whatsoever.
+            // Applies equally to an expired Yearly record or a time-limited
+            // Demo record: this product has no local free/anonymous fallback of
+            // any kind. In particular an expired Yearly licence does NOT
+            // silently become Demo — it becomes Unlicensed until V-T.ONE
+            // returns another valid signed package (renewal).
             $state = SiteState::Expired;
             $reason = 'expired';
         }

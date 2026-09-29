@@ -47,7 +47,7 @@ final class AriaInjector
     public function onModifyFrontendPage(string $buffer, string $template): string
     {
         // Scope gate: no licence for this root means no injected markup at all.
-        if (!$this->siteStatus->isActive($this->currentRootId())) {
+        if (!$this->siteStatus->isFullyLicensed($this->currentRootId())) {
             return $buffer;
         }
 

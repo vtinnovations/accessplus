@@ -55,7 +55,7 @@ final class OverlayInjectionListener
 
         // Scope gate: without a licence for this root the page is delivered
         // exactly as Contao would deliver it without this bundle.
-        if (!$this->siteStatus->isActive($rootId)) {
+        if (!$this->siteStatus->isFullyLicensed($rootId)) {
             return;
         }
 

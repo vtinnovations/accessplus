@@ -90,6 +90,13 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    # Demo package's cumulative usage counters (ALT images, page scans). Public:
+    # fetched by the root-page registration section to show remaining allowance.
+    VTInnovations\AccessPlus\State\UsageLedger:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+        public: true
+
     VTInnovations\AccessPlus\Exchange\RequestJournal:
         arguments:
             $projectDir: '%kernel.project_dir%'

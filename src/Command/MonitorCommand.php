@@ -57,7 +57,7 @@ final class MonitorCommand extends Command
         // Scope gate: the CLI works across the installation, so it needs at least
         // one licensed site root. Content of unlicensed roots stays untouched
         // (the linter and the services enforce that per root as well).
-        if (!$this->siteStatus->hasAnyActive()) {
+        if (!$this->siteStatus->hasAnyFullyLicensed()) {
             $output->writeln('<error>' . Text::get('command.no_license_error') . '</error>');
 
             return Command::FAILURE;

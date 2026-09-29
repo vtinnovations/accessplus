@@ -259,6 +259,110 @@ final class InboundUpdateTest extends TestCase
         self::assertFalse($this->provider(new RegistrationStore($this->projectDir))->forRoot(5)->isActive());
     }
 
+    /**
+     * The full A -> B domain-transfer sequence from a single Contao instance
+     * hosting three site roots: the licence moves from root 5 (example.com) to
+     * root 6 (successor.example.org), both carrying the same new authoritative
+     * version, while an unrelated already-active root 7 is never touched by
+     * either call.
+     */
+    public function testDomainTransferMovesEntitlementFromAToBWithoutAffectingUnrelatedRoots(): void
+    {
+        $handler = $this->multiRootHandler();
+        $provider = $this->multiRootProvider($handler);
+
+        // Baseline: root 7 (unrelated.example.net) is already licensed before
+        // the transfer sequence starts.
+        $unrelated = $this->factory->document([
+            'license_version' => 3,
+            'license_domain' => 'unrelated.example.net',
+            'license_domains' => ['unrelated.example.net'],
+        ]);
+        $baseline = $handler->handle($this->signedRequest($this->body([], 'req-baseline', $unrelated, 'unrelated.example.net')));
+        self::assertSame(200, $baseline['status']);
+
+        // A: root 5 starts active at version 9 (the shared fixture default).
+        // Checked via a throwaway provider instance rather than $provider, so
+        // $provider's per-request memo is never primed with root 5's
+        // pre-transfer state (it must re-read the post-transfer state below).
+        $a = $handler->handle($this->signedRequest($this->body([], 'req-a-active', null, 'example.com')));
+        self::assertSame(200, $a['status']);
+        self::assertTrue($this->multiRootProvider($handler)->forRoot(5)->isActive());
+
+        // The transfer: one new authoritative version (10), delivered as two
+        // installation-targeted packages describing the same revision.
+        $negativeForA = $this->factory->document([
+            'validation_status' => 'revoked',
+            'license_version' => 10,
+            'license_domain' => 'example.com',
+            'license_domains' => ['successor.example.org'],
+        ]);
+        $resultA = $handler->handle($this->signedRequest($this->body([], 'req-xfer-a', $negativeForA, 'example.com')));
+
+        $positiveForB = $this->factory->document([
+            'license_version' => 10,
+            'license_domain' => 'successor.example.org',
+            'license_domains' => ['successor.example.org'],
+        ]);
+        $resultB = $handler->handle($this->signedRequest($this->body([], 'req-xfer-b', $positiveForB, 'successor.example.org')));
+
+        self::assertSame(200, $resultA['status']);
+        self::assertSame(10, $resultA['body']['license_version']);
+        self::assertSame(200, $resultB['status']);
+        self::assertSame(10, $resultB['body']['license_version']);
+
+        self::assertFalse($provider->forRoot(5)->isActive(), 'A must lose entitlement');
+        self::assertTrue($provider->forRoot(6)->isFullyLicensed(), 'B must gain entitlement');
+        self::assertTrue($provider->forRoot(7)->isActive(), 'an unrelated root must be unaffected by the transfer');
+    }
+
+    /**
+     * @return array<int, array{id: int, dns: string, language: string, title: string, useSSL: int}>
+     */
+    private function threeRootFixture(): array
+    {
+        return [
+            ['id' => 5, 'dns' => 'example.com', 'language' => 'de', 'title' => 'A', 'useSSL' => 1],
+            ['id' => 6, 'dns' => 'successor.example.org', 'language' => 'de', 'title' => 'B', 'useSSL' => 1],
+            ['id' => 7, 'dns' => 'unrelated.example.net', 'language' => 'de', 'title' => 'C', 'useSSL' => 1],
+        ];
+    }
+
+    private function multiRootHandler(): InboundUpdate
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchAllAssociative')->willReturn($this->threeRootFixture());
+
+        $scope = new RootScope($connection);
+        $stack = new RequestStack();
+        $inventory = new DomainInventory($scope, $stack);
+        $reader = new SealedPackageReader($this->factory->anchors());
+        $store = new RegistrationStore($this->projectDir);
+
+        return new InboundUpdate(
+            new CallbackAuthenticator($this->factory->anchors()),
+            $reader,
+            $store,
+            new SiteStatusProvider($store, $reader, $inventory, $scope),
+            $inventory,
+            new RequestJournal($this->projectDir),
+            $this->logger,
+        );
+    }
+
+    private function multiRootProvider(InboundUpdate $handler): SiteStatusProvider
+    {
+        $connection = $this->createMock(Connection::class);
+        $connection->method('fetchAllAssociative')->willReturn($this->threeRootFixture());
+
+        $scope = new RootScope($connection);
+        $stack = new RequestStack();
+        $reader = new SealedPackageReader($this->factory->anchors());
+        $store = new RegistrationStore($this->projectDir);
+
+        return new SiteStatusProvider($store, $reader, new DomainInventory($scope, $stack), $scope);
+    }
+
     public function testGetIsAnsweredWithMethodNotAllowed(): void
     {
         $controller = new ServiceCallbackController($this->handler());

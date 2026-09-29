@@ -24,6 +24,7 @@ use VTInnovations\AccessPlus\State\SiteRegistrar;
 use VTInnovations\AccessPlus\State\SiteState;
 use VTInnovations\AccessPlus\State\SiteStatus;
 use VTInnovations\AccessPlus\State\SiteStatusProvider;
+use VTInnovations\AccessPlus\State\UsageLedger;
 
 /**
  * The ONE administrator surface for this bundle's registration, rendered inside
@@ -200,10 +201,24 @@ final class RootRegistrationSection
 
         if ($status->state === SiteState::Active || $status->state === SiteState::Expired) {
             $rows[$this->trans('license.masked_key_label')] = $status->maskedKey();
-            $rows[$this->trans('license.package_label')] = strtoupper($status->package);
+            $rows[$this->trans('license.package_label')] = $this->packageLabel($status);
             $rows[$this->trans('license.valid_from_label')] = $this->date($status->startsAt);
             $rows[$this->trans('license.valid_until_label')] = $status->lifetime ? $this->trans('license.lifetime_label') : $this->date($status->expiresAt);
             $rows[$this->trans('license.last_checked_label')] = $this->date($status->verifiedAt);
+
+            if ($status->isDemo()) {
+                $ledger = $this->service(UsageLedger::class);
+                $altUsed = $ledger->used(0, 'alt_images');
+                $pagesUsed = $ledger->used($status->rootId, 'pages_scanned');
+                $rows[$this->trans('license.demo_alt_usage_label')] = $this->trans('license.demo_usage_value', [
+                    'used' => $altUsed,
+                    'limit' => SiteStatusProvider::DEMO_ALT_IMAGE_LIMIT,
+                ]);
+                $rows[$this->trans('license.demo_pages_usage_label')] = $this->trans('license.demo_usage_value', [
+                    'used' => $pagesUsed,
+                    'limit' => SiteStatusProvider::DEMO_PAGE_SCAN_LIMIT,
+                ]);
+            }
         } elseif ($status->state === SiteState::Revoked && $status->hasKey()) {
             $rows[$this->trans('license.masked_key_label')] = $status->maskedKey();
         }
@@ -253,6 +268,20 @@ final class RootRegistrationSection
     {
         return '<button type="submit" class="tl_submit" name="' . self::ACTION_FIELD . '" value="' . $this->esc($action) . '">'
             . $this->esc($label) . '</button>';
+    }
+
+    /**
+     * Administrator-facing package label. `license_package` alone only says
+     * Demo vs. Pro; Yearly vs. Lifetime is derived from the existing signed
+     * `license_lifetime` flag, exactly as {@see SiteStatusProvider} evaluates it.
+     */
+    private function packageLabel(SiteStatus $status): string
+    {
+        if ($status->package === 'demo') {
+            return $this->trans('license.package_demo');
+        }
+
+        return $status->lifetime ? $this->trans('license.package_lifetime') : $this->trans('license.package_yearly');
     }
 
     private function stateText(SiteStatus $status): string

@@ -23,6 +23,8 @@ use VTInnovations\AccessPlus\Media\UsedImageCollector;
 use VTInnovations\AccessPlus\Model\AltSuggestionModel;
 use VTInnovations\AccessPlus\Model\AuditModel;
 use VTInnovations\AccessPlus\State\RuntimeConfig;
+use VTInnovations\AccessPlus\State\SiteStatusProvider;
+use VTInnovations\AccessPlus\State\UsageLedger;
 
 /**
  * Orchestrates alt-text proposals: batch-generate for images whose meta has no
@@ -36,9 +38,27 @@ use VTInnovations\AccessPlus\State\RuntimeConfig;
  *     (manual or already applied) are left untouched.
  *   - Idempotent: a pending/applied proposal for the same file+language is not
  *     regenerated, so re-runs don't re-spend tokens.
+ *
+ * Licensing (one of the three permitted Demo operations):
+ *   - no active licence anywhere → blocked outright, the ONLY server-side gate
+ *     for this operation (the BE_MOD screen has none of its own);
+ *   - at least one fully-licensed (Pro — Yearly or Lifetime) root → unlimited,
+ *     exactly the previous behaviour;
+ *   - Demo only → generation continues, but each image that is actually about
+ *     to be persisted first reserves one unit of the cumulative 25-image
+ *     allowance from {@see UsageLedger}; once that allowance is spent the
+ *     batch stops immediately, regardless of the requested $limit. Alt-text
+ *     generation is not scoped to a single site root (tl_files is shared), so
+ *     the Demo allowance is tracked under the install-wide ledger scope
+ *     (root id 0) — the same "whole install" convention already used by
+ *     {@see \VTInnovations\AccessPlus\Check\LintRunner::mayStore()} for
+ *     root-independent data.
  */
 final class AltSuggestionService
 {
+    /** Install-wide ledger scope for a feature that is not bound to one root. */
+    private const INSTALL_WIDE_SCOPE = 0;
+
     public function __construct(
         private readonly Connection $connection,
         private readonly AltTextGenerator $generator,
@@ -47,12 +67,35 @@ final class AltSuggestionService
         private readonly AuditLogger $auditLogger,
         private readonly RuntimeConfig $runtimeConfig,
         private readonly UsedImageCollector $usedImages,
+        private readonly SiteStatusProvider $siteStatus,
+        private readonly UsageLedger $usageLedger,
         private readonly LoggerInterface $logger,
     ) {
     }
 
     public function generateForMissing(int $limit = 25): AltSummary
     {
+        if (!$this->siteStatus->hasAnyActive()) {
+            return new AltSummary(true, 0, 0, 0, Text::get('command.no_license_error'));
+        }
+
+        // Demo-only installs never exceed the cumulative 25-image allowance,
+        // whatever limit was requested.
+        $demoOnly = !$this->siteStatus->hasAnyFullyLicensed();
+        if ($demoOnly) {
+            $remaining = $this->usageLedger->remaining(
+                self::INSTALL_WIDE_SCOPE,
+                'alt_images',
+                SiteStatusProvider::DEMO_ALT_IMAGE_LIMIT,
+            );
+
+            if ($remaining <= 0) {
+                return new AltSummary(true, 0, 0, 0, Text::get('alt.demo_limit_reached_message'));
+            }
+
+            $limit = min($limit, $remaining);
+        }
+
         if ($this->runtimeConfig->externalCallsBlocked()) {
             return new AltSummary(true, 0, 0, 0, Text::get('alt.generation_blocked_message'));
         }
@@ -143,6 +186,21 @@ final class AltSuggestionService
                         return new AltSummary(false, $generated, $skipped, $errors, Text::get('common.aborted_prefix', ['message' => $e->getMessage()]));
                     }
                     continue;
+                }
+
+                // Atomic, race-safe reservation at the exact moment the chargeable
+                // operation succeeds — never merely because a batch was requested.
+                // A concurrent batch racing this one cannot push the cumulative
+                // total past the allowance: the check-and-increment below happens
+                // inside UsageLedger's single locked critical section.
+                if ($demoOnly && !$this->usageLedger->tryConsume(self::INSTALL_WIDE_SCOPE, 'alt_images', SiteStatusProvider::DEMO_ALT_IMAGE_LIMIT)) {
+                    return new AltSummary(
+                        false,
+                        $generated,
+                        $skipped,
+                        $errors,
+                        Text::get('alt.generated_summary', ['generated' => $generated, 'skipped' => $skipped, 'errors' => $errors]),
+                    );
                 }
 
                 $this->persist($uuid, $path, $lang, $proposal);

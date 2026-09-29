@@ -35,7 +35,7 @@ final class FeedbackInboxGate
     {
         $provider = System::getContainer()->get(SiteStatusProvider::class);
 
-        if ($provider->hasAnyActive()) {
+        if ($provider->hasAnyFullyLicensed()) {
             return;
         }
 

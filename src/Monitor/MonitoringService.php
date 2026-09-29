@@ -48,7 +48,7 @@ final class MonitoringService
     {
         // Scope gate: automated re-scans (cron, on-save hook) need at least one
         // licensed site root; the linter itself still skips unlicensed roots.
-        if (!$this->siteStatus->hasAnyActive()) {
+        if (!$this->siteStatus->hasAnyFullyLicensed()) {
             return null;
         }
 

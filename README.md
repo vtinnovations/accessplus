@@ -48,25 +48,37 @@ Ein Backend-Hub „**Barrierefreiheit**" mit Tabs bündelt alles:
 | **PDF-Prüfung** | Erkennt fehlenden Titel / fehlende Sprache / fehlende Tags in PDFs (Detektion + Anleitung, ohne die Datei zu verändern) |
 | **Monitoring** | Wiederholt Prüfungen automatisch: CLI-Command, Contao-Cron (täglich, poor-man's-cron – kein Systemcron nötig) und optionaler Hook beim Speichern von Inhalten — gedrosselt, mit Score-Trend |
 | **Audit & Undo** | Jede automatische Änderung wird protokolliert (wer/wann/vorher/nachher) und ist rückgängig machbar |
-| **Lizenz** | Pro-Lizenz **je Startpunkt**, gebunden an dessen **exakten** Hostnamen; hinterlegt in den Startpunkt-Einstellungen |
+| **Lizenz** | Demo-/Jährlich-/Lifetime-Lizenz **je Startpunkt**, gebunden an dessen **exakten** Hostnamen; hinterlegt in den Startpunkt-Einstellungen |
 
 ---
 
 ## Funktionsstatus
 
-Das Bundle hat **kein** Free-Kontingent: Ohne aktivierte Pro-Lizenz für den
-jeweiligen Startpunkt ist Contao unverändert, alle unten stehenden Funktionen
-sind aus.
+Das Bundle hat **kein** anonymes Gratis-Kontingent: Ohne aktivierte Lizenz für
+den jeweiligen Startpunkt ist Contao unverändert, alle unten stehenden
+Funktionen sind aus. Es gibt drei Lizenzpakete, jedes davon erfordert einen
+echten aktivierten, signierten Lizenzschlüssel:
+
+- **Demo** — absichtlich begrenzt: KI-Alt-Text bis kumulativ 25 Bilder,
+  Frontend-Seitenscan (axe-core) bis kumulativ 15 Seiten, von den axe-Befunden
+  werden nur die ersten 30 überhaupt gespeichert/angezeigt. Jede andere
+  Funktion unten bleibt in Demo aus.
+- **Jährlich** — der volle Funktionsumfang unten, solange die signierte
+  Laufzeit gültig ist.
+- **Lifetime** — der volle Funktionsumfang unten, dauerhaft (kein
+  kommerzieller Ablauf), weiterhin vollständig der Signatur-, Domain- und
+  Widerrufsprüfung unterworfen.
 
 | Funktion | Status |
 |---|---|
-| Datenbank-Linter, Frontend-Scan (axe-core), Dashboard/Score | Nur Pro |
-| KI-Alt-Texte, ARIA-Namen, KI-Untertitel, Einfache/Leichte Sprache | Nur Pro, zusätzlich **Bedingt** auf einen konfigurierten KI-Zugang |
-| Overlay (Komfort-Widget) | Nur Pro |
-| Erklärung & Meldekanal (Frontend-Module) | Nur Pro |
-| PDF-Prüfung | Nur Pro, **Bedingt** auf `smalot/pdfparser` (Composer-Pflichtabhängigkeit, immer installiert) |
-| Monitoring (CLI/Cron/Save-Hook) | Nur Pro |
-| Audit & Undo | Nur Pro |
+| KI-Alt-Texte | Demo (kumulativ 25 Bilder) oder voll (unbegrenzt), zusätzlich **Bedingt** auf einen konfigurierten KI-Zugang |
+| Frontend-Scan (axe-core) + axe-Befunde | Demo (kumulativ 15 Seiten, erste 30 Befunde) oder voll (unbegrenzt) |
+| Datenbank-Linter („Jetzt scannen"), Dashboard/Score, ARIA-Namen, KI-Untertitel, Einfache/Leichte Sprache | Nur Jährlich/Lifetime |
+| Overlay (Komfort-Widget) | Nur Jährlich/Lifetime |
+| Erklärung & Meldekanal (Frontend-Module) | Nur Jährlich/Lifetime |
+| PDF-Prüfung | Nur Jährlich/Lifetime, **Bedingt** auf `smalot/pdfparser` (Composer-Pflichtabhängigkeit, immer installiert) |
+| Monitoring (CLI/Cron/Save-Hook) | Nur Jährlich/Lifetime |
+| Audit & Undo | Gilt für jede oben tatsächlich vorgenommene Änderung |
 
 ---
 
@@ -243,11 +255,13 @@ PHP-Zeitlimit bei großen Untertitel-Batches): siehe
 
 Code: **LGPL-3.0-or-later**.
 
-Nutzungslizenz: **Pro — je Startpunkt und exaktem Hostnamen**, bezogen über
-V-T.ONE. Es gibt keine Trial-, Free- oder Kulanzstufe: ohne aktivierte,
-kryptografisch geprüfte Pro-Lizenz sind die Funktionen für den betreffenden
-Startpunkt aus. Hinterlegt wird sie unter *Seitenstruktur → Startpunkt
-bearbeiten → AccessPlus Licence management*.
+Nutzungslizenz: **Demo, Jährlich oder Lifetime — je Startpunkt und exaktem
+Hostnamen**, bezogen über V-T.ONE. Es gibt keine anonyme Gratis- oder
+Kulanzstufe: alle drei Pakete erfordern eine echte aktivierte, kryptografisch
+geprüfte Lizenz, sonst sind die Funktionen für den betreffenden Startpunkt aus
+(Details zum Funktionsumfang je Paket: Abschnitt „Funktionsstatus" oben).
+Hinterlegt wird sie unter *Seitenstruktur → Startpunkt bearbeiten →
+AccessPlus Licence management*.
 
 `www.example.com` und `example.com` sind dabei **verschiedene** Hosts; jeder
 Startpunkt braucht die Domain, mit der er in Contao konfiguriert ist.

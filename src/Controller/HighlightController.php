@@ -53,7 +53,7 @@ final class HighlightController
         // finding that could not be attributed to a root (rootId 0) follows the
         // same rule the linter uses for install-wide findings.
         $rootId = (int) $finding->rootId;
-        $licensed = $rootId > 0 ? $this->siteStatus->isActive($rootId) : $this->siteStatus->hasAnyActive();
+        $licensed = $rootId > 0 ? $this->siteStatus->isFullyLicensed($rootId) : $this->siteStatus->hasAnyFullyLicensed();
 
         if (!$licensed) {
             return new Response($this->page('<p>' . $this->esc(Text::get('highlight.no_preview')) . '</p>'), 200);

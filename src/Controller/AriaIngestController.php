@@ -62,7 +62,7 @@ final class AriaIngestController
         $payload = json_decode((string) $request->getContent(), true);
 
         // Scope gate: ARIA fixes are applied to the pages of one site root.
-        if (!$this->siteStatus->isActive(\is_array($payload) ? (int) ($payload['root'] ?? 0) : 0)) {
+        if (!$this->siteStatus->isFullyLicensed(\is_array($payload) ? (int) ($payload['root'] ?? 0) : 0)) {
             return new JsonResponse(['ok' => false, 'error' => 'not_licensed'], 403);
         }
 

@@ -46,7 +46,7 @@ final class SubtitleTrackInjector
     public function onModifyFrontendPage(string $buffer, string $template): string
     {
         // Scope gate: an unlicensed root keeps Contao's original markup.
-        if (!$this->siteStatus->isActive($this->currentRootId())) {
+        if (!$this->siteStatus->isFullyLicensed($this->currentRootId())) {
             return $buffer;
         }
 

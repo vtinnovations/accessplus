@@ -50,7 +50,7 @@ final class SimpleLanguageRenderer
     public function onModifyFrontendPage(string $buffer, string $template): string
     {
         // Scope gate: text substitution only happens on a licensed root.
-        if (!$this->siteStatus->isActive($this->currentRootId())) {
+        if (!$this->siteStatus->isFullyLicensed($this->currentRootId())) {
             return $buffer;
         }
 

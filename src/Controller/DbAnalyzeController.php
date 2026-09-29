@@ -52,7 +52,7 @@ final class DbAnalyzeController
         $payload = json_decode((string) $request->getContent(), true);
         $rootId = \is_array($payload) ? (int) ($payload['root'] ?? 0) : 0;
 
-        if (!$this->siteStatus->isActive($rootId)) {
+        if (!$this->siteStatus->isFullyLicensed($rootId)) {
             return new JsonResponse(['ok' => false, 'error' => 'not_licensed'], 403);
         }
 

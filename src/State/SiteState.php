@@ -14,9 +14,13 @@ declare(strict_types=1);
 namespace VTInnovations\AccessPlus\State;
 
 /**
- * The states a site root can be in. There is no "grace", no "trial" and no
- * "free" member: this product is Pro-only, so anything that is not `Active`
+ * The states a site root can be in. There is no "grace" member and no implicit
+ * "installed therefore enabled" state: every package (Demo, Yearly, Lifetime)
+ * requires a real activated, signed licence, so anything that is not `Active`
  * means the bundle behaves exactly like it is not installed for that root.
+ * `Active` itself does not imply the FULL feature set — see
+ * {@see \VTInnovations\AccessPlus\State\SiteStatus::isFullyLicensed()} for the
+ * Demo/Pro distinction within this one active state.
  *
  * `Revoked` and `Expired` are AUTHENTIC negative states — the issuer signed
  * them and the client applied them. They are not failures; they are the answer

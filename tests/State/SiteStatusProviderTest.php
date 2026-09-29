@@ -25,8 +25,9 @@ use VTInnovations\AccessPlus\State\SiteStatusProvider;
 use VTInnovations\AccessPlus\Tests\Support\TestPackageFactory;
 
 /**
- * The product policy: Pro only, exact host binding per site root, server-side
- * dates, and no fallback of any kind.
+ * The product policy: Demo and Pro only (exactly two accepted wire package
+ * values), exact host binding per site root, server-side dates, and no
+ * anonymous/local fallback of any kind.
  */
 final class SiteStatusProviderTest extends TestCase
 {
@@ -57,16 +58,49 @@ final class SiteStatusProviderTest extends TestCase
 
         self::assertSame(SiteState::Active, $status->state);
         self::assertTrue($status->isActive());
+        self::assertTrue($status->isFullyLicensed());
+        self::assertFalse($status->isDemo());
         self::assertSame('example.com', $status->matchedDomain);
         self::assertSame('pro', $status->package);
         self::assertSame(7, $status->version);
         self::assertTrue($status->hasKey());
     }
 
+    public function testValidDemoPackageActivatesTheRootWithLimitedEntitlement(): void
+    {
+        $status = $this->provider()->evaluate($this->factory->document(['license_package' => 'demo']), 5);
+
+        self::assertSame(SiteState::Active, $status->state);
+        self::assertTrue($status->isActive());
+        self::assertTrue($status->isDemo());
+        self::assertFalse($status->isFullyLicensed());
+        self::assertSame('demo', $status->package);
+    }
+
+    /**
+     * A Yearly package (`pro`, non-lifetime, signed expiry) and a Lifetime
+     * package (`pro`, lifetime=true, null expiry) both fully license the root;
+     * they are distinguished only by the existing lifetime/expiry fields, never
+     * by a separate package identifier.
+     */
+    public function testYearlyAndLifetimeAreBothFullyLicensedProPackages(): void
+    {
+        $yearly = $this->provider()->evaluate($this->factory->document(), 5);
+        self::assertTrue($yearly->isFullyLicensed());
+        self::assertFalse($yearly->lifetime);
+
+        $lifetime = $this->provider()->evaluate($this->factory->document([
+            'license_lifetime' => true,
+            'license_expires_at' => null,
+        ]), 5);
+        self::assertTrue($lifetime->isFullyLicensed());
+        self::assertTrue($lifetime->lifetime);
+    }
+
     /**
      * @dataProvider rejectedPackages
      */
-    public function testOnlyProIsAccepted(string $package): void
+    public function testOnlyKnownPackagesAreAccepted(string $package): void
     {
         $status = $this->provider()->evaluate($this->factory->document(['license_package' => $package]), 5);
 
@@ -369,6 +403,22 @@ final class SiteStatusProviderTest extends TestCase
         self::assertTrue($provider->forRoot(5)->isActive());
         self::assertSame(SiteState::Unlicensed, $provider->forRoot(6)->state, 'One root never licenses another.');
         self::assertSame([5], $provider->activeRootIds());
+        self::assertSame([5], $provider->fullyLicensedRootIds());
+    }
+
+    public function testDemoRootIsActiveButNotFullyLicensed(): void
+    {
+        $provider = $this->provider('example.com', [
+            ['id' => 5, 'dns' => 'example.com', 'language' => 'de', 'title' => 'A', 'useSSL' => 1],
+        ]);
+
+        $this->store(5, $this->factory->document(['license_package' => 'demo']));
+
+        self::assertTrue($provider->isActive(5));
+        self::assertFalse($provider->isFullyLicensed(5));
+        self::assertSame([5], $provider->activeRootIds());
+        self::assertSame([], $provider->fullyLicensedRootIds());
+        self::assertFalse($provider->hasAnyFullyLicensed());
     }
 
     public function testCopyingTheStateToAnotherRootDoesNotWork(): void

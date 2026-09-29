@@ -75,6 +75,6 @@ final class StatementFrontendModule extends Module
     {
         $rootId = isset($GLOBALS['objPage']) ? (int) ($GLOBALS['objPage']->rootId ?? 0) : 0;
 
-        return System::getContainer()->get(SiteStatusProvider::class)->isActive($rootId);
+        return System::getContainer()->get(SiteStatusProvider::class)->isFullyLicensed($rootId);
     }
 }

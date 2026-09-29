@@ -44,7 +44,7 @@ final class LintRunner
     {
         // Scope gate: findings are written per site root, and an unlicensed root
         // must be left exactly as it is — neither new findings nor status changes.
-        $licensed = $this->siteStatus->activeRootIds();
+        $licensed = $this->siteStatus->fullyLicensedRootIds();
 
         /** @var array<string, Finding> $current fingerprint => finding */
         $current = [];

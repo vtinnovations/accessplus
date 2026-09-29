@@ -215,10 +215,28 @@ place; the Settings tab deliberately has no second licence manager.
 
 ### Model
 
-- **Pro only.** There is **no** trial, free, grace or "somehow still works"
-  tier. Without an activated, valid Pro licence, **all** of the bundle's
-  features are off for the respective root page — Contao then behaves
-  exactly as if it were not installed.
+- **Three packages, each requiring a licence.** There is **no** anonymous
+  free tier, no locally generated trial, and no "somehow still works" state.
+  Without an activated, valid licence, **all** of the bundle's features are
+  off for the respective root page — Contao then behaves exactly as if it
+  were not installed.
+  - **Demo** — a real activated, signed licence, but deliberately narrow: AI
+    alt text up to a cumulative **25 images**, frontend page scan (axe) up
+    to a cumulative **15 pages**, and only the **first 30** axe issues found
+    are ever stored/shown server-side. Every other bundle feature (ARIA
+    fixes, PDF check, subtitles, plain language, comfort overlay,
+    accessibility statement, feedback channel, monitoring, the "Scan now"
+    database linter) stays **off** under Demo. The counters are durable
+    (one file per root page, or install-wide for the alt-text counter),
+    are **never** reset by logout/login, cache clearing, session expiry, or
+    re-entering the same key, and are safe under concurrent access (file
+    locking).
+  - **Yearly** — the full feature set with a signed expiry date. After
+    expiry the licensed features are disabled; there is **no** silent
+    fallback to Demo.
+  - **Lifetime** — the full feature set permanently, with no expiry date.
+    Still fully subject to signature, domain and revocation checks like
+    every other package.
 - **One licence per root page (`tl_page` type=root).** State is stored per
   root page; a licence **never** activates another root page.
 - **Exact host binding.** `example.com`, `www.example.com` and
@@ -243,41 +261,47 @@ with no custom JavaScript.
 
 ### Revocation and domain transfer
 
-A licence state can also be **withdrawn**. V-T.ONE signs a `revoked` (or
-`expired`) state and delivers it exactly like any other update — the outer
-operation stays `license_update`; there is no separate "disable" verb. The
-client separates *packet authenticity* ("did V-T.ONE issue this?") from
-*entitlement outcome* ("what may this root do now?"): a fully authentic packet
-can still say "no longer Pro". A withdrawn state disables the bundle's features
-for that root and Contao's default behaviour returns.
+A licence state can also be **withdrawn** — V-T.ONE delivers a new, equally
+fully signed state for this, not a separate "disable" verb. A technically
+valid, genuine update can therefore still mean that the affected root page no
+longer has any paid features unlocked. A withdrawn state disables the
+bundle's features for that root and Contao's default behaviour returns.
 
-- **Push:** V-T.ONE POSTs the signed negative state to
-  `POST /rest/api/v1/accessplus-license-updater` for the affected host. It is
-  stored as a durable *tombstone* that survives **Remove licence** and a
-  hand-restored backup of an older `state.json` — a revoked root cannot be
-  brought back to Pro by putting an old licence file back on disk. Only a
-  genuinely newer signed state from V-T.ONE reinstates it.
-- **Domain transfer (A → B):** the same authoritative version is delivered to A
-  as `revoked` and to B as `valid`; A's features stop, B's start, other roots
-  are untouched.
-- **Lease fallback:** every protected state also carries signed
-  `license_refresh_required_at` / `license_grace_until`. If a push never
-  arrives (installation offline / firewalled), an hourly cron re-confirms the
-  state once the refresh deadline passes; after the signed grace cutoff the
-  protected features fail closed until a fresh valid state is obtained. A
-  transient network failure only tolerates until that cutoff.
+- **Push:** V-T.ONE can actively deliver a withdrawn or otherwise changed
+  licence state to the affected installation without a backend click being
+  needed. The withdrawal is stored durably and survives both **Remove
+  licence** and a hand-restored backup of an older local copy of the licence
+  state — a revoked root cannot be brought back by putting an older licence
+  copy back on disk. Only a genuinely newer signed state from V-T.ONE
+  reinstates it.
+- **Domain transfer (A → B):** V-T.ONE can move a licence from one root page
+  to another (including across installations); the old host stops, the new
+  one starts, other root pages are untouched.
+- **Lease fallback:** every protected state also carries a signed deadline
+  until which it is valid without checking back with V-T.ONE again. If a
+  push never arrives (installation offline / firewalled), an hourly cron
+  re-checks the state once that deadline passes; if that also fails, the
+  protected features fail closed after a further, likewise signed grace
+  period until a fresh valid state is obtained. A transient network failure
+  only tolerates until that point.
 
-### What happens without a licence
+### What happens without a licence (or with only a Demo licence)
 
-| Area | Behaviour without a valid licence |
-|---|---|
-| "Accessibility" backend hub | A notice instead of the tools; only licensed root pages are selectable |
-| Full scan / database analysis / ARIA ingest / preview | HTTP 403, no data change |
-| Database linter | writes no findings for unlicensed root pages and does not change their existing findings |
-| CLI commands, cron, monitoring | abort with a notice |
-| Overlay, plain language, subtitle `<track>`, ARIA injection | no output, default Contao page |
-| Frontend modules (statement, feedback channel, switch) | render nothing |
-| Reports inbox | read-only — submitted reports are never hidden or deleted |
+| Area | Without a valid licence | With a **Demo** licence |
+|---|---|---|
+| "Accessibility" backend hub | A notice instead of the tools; only licensed root pages are selectable | The hub is reachable (needed to reach alt text/scan/licence) |
+| AI alt text | HTTP/CLI abort, no generation | works up to the cumulative 25-image allowance, then aborts with a notice |
+| Frontend page scan (axe) / axe results | HTTP 403, no data change | works up to the cumulative 15-page allowance; findings stored/shown per root page are capped server-side to the first 30 |
+| Full scan / database analysis / ARIA ingest / preview | HTTP 403, no data change | **also** HTTP 403 — these are Pro features, not part of Demo |
+| Database linter | writes no findings for unlicensed root pages and does not change their existing findings | same — Demo alone does not count as fully licensed here |
+| CLI commands, cron, monitoring (except the alt-text command) | abort with a notice | same |
+| Overlay, plain language, subtitle `<track>`, ARIA injection | no output, default Contao page | same — Pro features |
+| Frontend modules (statement, feedback channel, switch) | render nothing | same |
+| Reports inbox | read-only — submitted reports are never hidden or deleted | same |
+
+The "AccessPlus Licence management" section itself additionally shows the
+current allowance status for an active Demo licence (e.g. "Demo: ALT images:
+17 / 25 used").
 
 ### Data transmission (transparency)
 
@@ -307,9 +331,10 @@ packets themselves or their authentication material.
   cryptographically on every check.
 - Requires the PHP extension `sodium` for signature verification. If it is
   missing, the section reports this in plain text and activates nothing.
-- Delivered updates are checked server-side against an internal replay
-  memory. With multiple nodes (load balancing), `var/` must be shared
-  between the nodes.
+- Delivered updates are fully verified before being applied, and an update
+  that has already been processed is recognised and never applied twice.
+  With multiple nodes (load balancing), `var/` must be shared between the
+  nodes.
 
 ## B5. AI connection
 

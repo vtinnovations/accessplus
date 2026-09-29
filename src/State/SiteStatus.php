@@ -167,11 +167,36 @@ final class SiteStatus
     }
 
     /**
-     * The single question every feature gate asks.
+     * The single question every feature gate asks: does this root have ANY
+     * currently authentic, in-window licence at all (Demo or Pro)? This alone
+     * is not enough to unlock a Pro-only feature — see {@see isFullyLicensed()}.
      */
     public function isActive(): bool
     {
         return $this->state === SiteState::Active;
+    }
+
+    /**
+     * True for the deliberately limited package: a real activated, signed
+     * licence that is restricted to the Demo entitlement (bounded ALT
+     * generation, bounded page scanning, truncated axe results) rather than the
+     * full Access+ feature set. See {@see \VTInnovations\AccessPlus\State\SiteStatusProvider}
+     * for the accepted package vocabulary.
+     */
+    public function isDemo(): bool
+    {
+        return $this->state === SiteState::Active && $this->package === 'demo';
+    }
+
+    /**
+     * True only for an active Pro package (Yearly or Lifetime — the two are
+     * distinguished solely by {@see $lifetime} / {@see $expiresAt}, never by a
+     * separate package identifier). Every feature outside the three Demo
+     * allowances must gate on this, not on {@see isActive()}.
+     */
+    public function isFullyLicensed(): bool
+    {
+        return $this->state === SiteState::Active && $this->package === 'pro';
     }
 
     /**
