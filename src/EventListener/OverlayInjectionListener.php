@@ -37,7 +37,7 @@ use VTInnovations\AccessPlus\State\SiteStatusProvider;
 final class OverlayInjectionListener
 {
     /** Bump when overlay CSS/JS changes (cache-bust via ?v= in TL_BODY). */
-    private const ASSET_VERSION = '1.24.4';
+    private const ASSET_VERSION = '1.25.7';
 
     public function __construct(
         private readonly RuntimeConfig $runtimeConfig,

@@ -24,7 +24,7 @@
   var KEY = 'accessplus_prefs';
   var prefs = {};
   var enabled = [];
-  var root, panel, dyn, mag, guide, hovered;
+  var root, panel, dyn, dynSheet, mag, guide, hovered;
 
   var LABELS = {
     profile_epilepsy: 'Epilepsie-sicherer Modus', profile_lowvision: 'Sehbehinderten-Modus', profile_adhd: 'ADHS-freundlicher Modus',
@@ -55,9 +55,18 @@
     profile_lowvision: { fontsize: 2, highcontrast: true, readablefont: true, bigcursor: true },
     profile_adhd: { readingguide: true, stopanim: true }
   };
+  /* Which modes the visitor switched on. Tracked explicitly, because it cannot be
+     inferred from the settings a mode applies: two modes may set the SAME setting
+     (epilepsy and ADHD both set `stopanim`), so removing it when one is switched
+     off would drop the other too, and restoring it would revive the other. Kept
+     inside `prefs` so save/load and "reset all" cover it with no extra plumbing. */
+  var MODE_KEY = '_modes';
   var POS = ['bottomright', 'bottomleft', 'topright', 'topleft', 'middleright', 'middleleft'];
   // Mutually exclusive contrast modes — turning one on switches the others off.
   var CONTRAST_MODES = ['darkcontrast', 'lightcontrast', 'highcontrast'];
+  // Same for the two typefaces: only one font can win, so only one may be switched on.
+  var FONT_MODES = ['readablefont', 'dyslexiafont'];
+  var EXCLUSIVE = [CONTRAST_MODES, FONT_MODES];
 
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', init); }
   else { init(); }
@@ -76,8 +85,25 @@
     if (/^#[0-9a-f]{3,6}$/i.test(color || '')) { root.style.setProperty('--accessplus-accent', color); }
     var pos = root.getAttribute('data-position') || 'bottomright';
     root.classList.add('pos-' + (POS.indexOf(pos) !== -1 ? pos : 'bottomright'));
-    dyn = document.createElement('style'); dyn.id = 'accessplus-dyn'; document.head.appendChild(dyn);
+    /* A <style> element filled from script counts as an INLINE style block: on a site
+       whose Content-Security-Policy omits 'unsafe-inline' the browser drops it without
+       an error, and every option built in buildDyn() (background, text/title/link
+       colour, line height, letter spacing) silently stops working. A constructable
+       stylesheet is CSSOM rather than an inline block, so CSP allows it. Browsers
+       without support keep the original <style> element. */
+    if (typeof CSSStyleSheet === 'function'
+      && typeof CSSStyleSheet.prototype.replaceSync === 'function'
+      && 'adoptedStyleSheets' in Document.prototype) {
+      try {
+        dynSheet = new CSSStyleSheet();
+        document.adoptedStyleSheets = document.adoptedStyleSheets.concat([dynSheet]);
+      } catch (e) { dynSheet = null; }
+    }
+    if (!dynSheet) {
+      dyn = document.createElement('style'); dyn.id = 'accessplus-dyn'; document.head.appendChild(dyn);
+    }
     prefs = load();
+    migrateModes();
     applyAll();
     buildWidget();
     wireRuntime();
@@ -89,12 +115,15 @@
   function ishex(v) { return /^#[0-9a-f]{3,6}$/i.test(v); }
 
   function applyAll() {
-    // Safety net: never more than one contrast mode active at once.
-    var activeCM = CONTRAST_MODES.filter(function (m) { return prefs[m]; });
-    if (activeCM.length > 1) { activeCM.slice(0, -1).forEach(function (m) { delete prefs[m]; }); }
+    // Safety net: never more than one of a mutually exclusive group active at once.
+    EXCLUSIVE.forEach(function (group) {
+      var on = group.filter(function (m) { return prefs[m]; });
+      if (on.length > 1) { on.slice(0, -1).forEach(function (m) { delete prefs[m]; }); }
+    });
     if (!prefs.hoverhighlight && hovered) { hovered.classList.remove('accessplus-hovered'); hovered = null; }
 
     Object.keys(CLASSMAP).forEach(function (id) { HTML.classList.toggle(CLASSMAP[id], !!prefs[id]); });
+    markBackgroundImages(!!prefs.highcontrast || !!prefs.lightcontrast);
     HTML.classList.remove('accessplus-align-left', 'accessplus-align-center', 'accessplus-align-right');
     if (prefs.textalign) { HTML.classList.add('accessplus-align-' + prefs.textalign); }
     HTML.style.fontSize = prefs.fontsize ? (100 + prefs.fontsize * 10) + '%' : '';
@@ -109,15 +138,68 @@
     }
   }
 
+  /* The high and light contrast modes force a background colour onto every element,
+     which would wipe out background images. The stylesheet exempts inline ones on its
+     own; this marks the elements whose image comes from a stylesheet rule, which a
+     selector cannot match. Only walks the DOM while one of those modes is on, and the
+     widget lives outside <body> so it is never touched. */
+  function markBackgroundImages(active) {
+    var marked = document.querySelectorAll('.accessplus-has-bg');
+    for (var m = 0; m < marked.length; m++) { marked[m].classList.remove('accessplus-has-bg'); }
+    if (!active || !document.body) { return; }
+    var all = document.body.getElementsByTagName('*');
+    for (var i = 0; i < all.length; i++) {
+      var bg;
+      try { bg = getComputedStyle(all[i]).backgroundImage; } catch (e) { continue; }
+      if (bg && bg !== 'none' && bg.indexOf('url(') !== -1) {
+        all[i].classList.add('accessplus-has-bg');
+        /* Its ancestors too. They are usually transparent wrappers (slider slots and
+           the like); giving them an opaque colour would paint straight over the image
+           sitting inside them. Stops at <body>, which still gets the mode's colour. */
+        for (var p = all[i].parentElement; p && p !== document.body; p = p.parentElement) {
+          p.classList.add('accessplus-has-bg');
+        }
+      }
+    }
+  }
+
+  /* A chosen background colour has to reach the surface the visitor actually sees.
+     Many themes wrap the whole page in an opaque element (bender: #contentwrapper and
+     #container), so recolouring html/body alone is applied but never visible. Every
+     element painting its own solid colour is recoloured as well; anything showing a
+     background image is skipped, so pictures survive. */
+  function markBackgroundSurfaces(active) {
+    var marked = document.querySelectorAll('.accessplus-bg-surface');
+    for (var m = 0; m < marked.length; m++) { marked[m].classList.remove('accessplus-bg-surface'); }
+    if (!active || !document.body) { return; }
+    var all = document.body.getElementsByTagName('*');
+    for (var i = 0; i < all.length; i++) {
+      var cs;
+      try { cs = getComputedStyle(all[i]); } catch (e) { continue; }
+      if (cs.backgroundImage && cs.backgroundImage !== 'none') { continue; }
+      var bg = cs.backgroundColor;
+      var compact = String(bg).split(' ').join('');
+      if (!bg || bg === 'transparent' || compact.slice(-3) === ',0)') { continue; }
+      all[i].classList.add('accessplus-bg-surface');
+    }
+  }
+
   function buildDyn() {
+    // Must happen here, not in applyAll(): the colour swatches call buildDyn()
+    // directly, so this is the one place every route passes through.
+    markBackgroundSurfaces(ishex(prefs.color_bg));
     var c = '';
     if (prefs.lineheight) { c += 'body,p,li,td,dd,blockquote{line-height:' + (1.4 + prefs.lineheight * 0.35).toFixed(2) + ' !important;}'; }
     if (prefs.letterspacing) { c += 'body,p,li,td,a,span{letter-spacing:' + (prefs.letterspacing * 0.06).toFixed(2) + 'em !important;}'; }
     if (ishex(prefs.color_text)) { c += 'body,p,li,span,td{color:' + prefs.color_text + ' !important;}'; }
     if (ishex(prefs.color_title)) { c += 'h1,h2,h3,h4,h5,h6{color:' + prefs.color_title + ' !important;}'; }
     if (ishex(prefs.color_link)) { c += 'a{color:' + prefs.color_link + ' !important;}'; }
-    if (ishex(prefs.color_bg)) { c += 'html,body{background:' + prefs.color_bg + ' !important;}'; }
-    dyn.textContent = c;
+    if (ishex(prefs.color_bg)) {
+      c += 'html,body{background-color:' + prefs.color_bg + ' !important;}';
+      c += '.accessplus-bg-surface{background-color:' + prefs.color_bg + ' !important;}';
+    }
+    if (dynSheet) { try { dynSheet.replaceSync(c); } catch (e) { /* ignore */ } }
+    else if (dyn) { dyn.textContent = c; }
   }
 
   function applyMedia() {
@@ -263,9 +345,13 @@
     var b = el('button', { type: 'button', 'class': 'accessplus-switch', 'data-pref': id, 'aria-pressed': prefs[id] ? 'true' : 'false', 'aria-label': LABELS[id] });
     b.addEventListener('click', function () {
       prefs[id] = !prefs[id];
-      // Contrast modes are mutually exclusive — clear the others when enabling.
-      if (prefs[id] && CONTRAST_MODES.indexOf(id) !== -1) {
-        CONTRAST_MODES.forEach(function (m) { if (m !== id) { delete prefs[m]; } });
+      // Contrast modes and typefaces are mutually exclusive — clear the rest of the
+      // group when one is switched on.
+      if (prefs[id]) {
+        EXCLUSIVE.forEach(function (group) {
+          if (group.indexOf(id) === -1) { return; }
+          group.forEach(function (m) { if (m !== id) { delete prefs[m]; } });
+        });
       }
       save(); applyAll(); refreshControls();
       if (id === 'tts' && prefs[id]) { toast('Markieren Sie Text oder klicken Sie ein Element an, um es vorlesen zu lassen.'); }
@@ -280,13 +366,49 @@
     var b = el('button', { type: 'button', 'class': 'accessplus-switch', 'data-profile': id, 'aria-pressed': profileActive(id) ? 'true' : 'false', 'aria-label': LABELS[id] });
     b.addEventListener('click', function () {
       var nowOn = !profileActive(id);
-      Object.keys(PROFILES[id]).forEach(function (k) { if (nowOn) { prefs[k] = PROFILES[id][k]; } else { delete prefs[k]; } });
+      var active = activeModes();
+      if (nowOn) {
+        // Switching a mode on still applies its settings, exactly as before.
+        Object.keys(PROFILES[id]).forEach(function (k) { prefs[k] = PROFILES[id][k]; });
+        active[id] = true;
+      } else {
+        delete active[id];
+        Object.keys(PROFILES[id]).forEach(function (k) {
+          // Leave a setting another switched-on mode still needs, and leave one the
+          // visitor has changed by hand — undo only what this mode itself applied.
+          if (neededByActiveMode(k)) { return; }
+          if (prefs[k] !== PROFILES[id][k]) { return; }
+          delete prefs[k];
+        });
+      }
+      prefs[MODE_KEY] = active;
       save(); applyAll(); refreshControls();
     });
     r.appendChild(b);
     return r;
   }
-  function profileActive(id) { return Object.keys(PROFILES[id]).every(function (k) { return prefs[k] === PROFILES[id][k]; }); }
+  function activeModes() { var a = prefs[MODE_KEY]; return (a && typeof a === 'object') ? a : {}; }
+  function profileActive(id) { return activeModes()[id] === true; }
+
+  /* Preferences saved by an earlier version carry no explicit state — derive it
+     once, the old way, so a visitor's active modes survive the update. */
+  function migrateModes() {
+    if (prefs[MODE_KEY] && typeof prefs[MODE_KEY] === 'object') { return; }
+    var a = {};
+    Object.keys(PROFILES).forEach(function (id) {
+      if (Object.keys(PROFILES[id]).every(function (k) { return prefs[k] === PROFILES[id][k]; })) { a[id] = true; }
+    });
+    prefs[MODE_KEY] = a;
+  }
+
+  /* Is `key` applied by a mode that is still switched on? Called after the mode
+     being switched off was unmarked, so it never matches itself. */
+  function neededByActiveMode(key) {
+    var a = activeModes();
+    return Object.keys(a).some(function (id) {
+      return a[id] === true && Object.prototype.hasOwnProperty.call(PROFILES[id] || {}, key);
+    });
+  }
 
   function stepperRow(id) {
     var range = STEPPERS[id];
@@ -327,10 +449,20 @@
 
   function colorRow(id) {
     var wrap = el('div');
-    wrap.appendChild(el('div', { 'class': 'accessplus-group', style: 'border:0;color:#333;font-weight:600;' }, LABELS[id]));
+    /* Styling goes through the CSSOM, never through a style="…" attribute: a style
+       attribute is inline CSS, so a site whose Content-Security-Policy omits
+       'unsafe-inline' drops it and every swatch renders in the same default grey —
+       leaving no way to see or pick a colour. Setting the property from script is
+       not covered by CSP and works everywhere. */
+    var head = el('div', { 'class': 'accessplus-group' }, LABELS[id]);
+    head.style.border = '0';
+    head.style.color = '#333';
+    head.style.fontWeight = '600';
+    wrap.appendChild(head);
     var sw = el('div', { 'class': 'accessplus-swatches' });
     PALETTE.forEach(function (col) {
-      var b = el('button', { type: 'button', 'class': 'accessplus-swatch', 'aria-label': LABELS[id] + ' ' + col, title: col, style: 'background:' + col });
+      var b = el('button', { type: 'button', 'class': 'accessplus-swatch', 'aria-label': LABELS[id] + ' ' + col, title: col });
+      b.style.background = col;
       b.addEventListener('click', function () { prefs[id] = col; save(); buildDyn(); });
       sw.appendChild(b);
     });
@@ -357,7 +489,16 @@
     }
     sel.addEventListener('change', function () {
       var target = document.querySelector('a[data-accessplus-link="' + sel.value + '"]');
-      if (target) { target.scrollIntoView({ block: 'center' }); target.focus(); }
+      if (!target) { return; }
+      target.scrollIntoView({ block: 'center' });
+      target.focus();
+      // Put the list back to its placeholder BEFORE following the link, so picking the
+      // same entry again still fires a change event once we are back on the page.
+      sel.selectedIndex = 0;
+      // Follow it by clicking the element itself rather than assigning location: that
+      // keeps whatever the site does with the link — target="_blank", download, an
+      // in-page anchor, or its own click handler.
+      target.click();
     });
     r.appendChild(sel);
     return r;

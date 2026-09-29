@@ -137,7 +137,14 @@ final class SubtitleTrackInjector
             if ($lang === null) {
                 continue;
             }
-            $out[$lang] = ($urlDir === '' ? '' : $urlDir) . '/' . rawurlencode($file);
+            // Cache-bust with the file's own mtime. A regenerated subtitle keeps the
+            // same name, and the .vtt is served without a Cache-Control header, so the
+            // browser reuses its stored copy without even revalidating and the viewer
+            // keeps seeing the previous captions. Changing the URL on every write is
+            // what makes an edit actually reach the player.
+            $stamp = @filemtime($absVtt);
+            $out[$lang] = ($urlDir === '' ? '' : $urlDir) . '/' . rawurlencode($file)
+                . ($stamp === false ? '' : '?v=' . $stamp);
         }
 
         return $out;

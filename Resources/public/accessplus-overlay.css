@@ -10,7 +10,8 @@
 /*
  * vtinnovations/accessplus — comfort overlay (full feature set).
  * Self-contained, no external resources. Effects toggled via html.accessplus-*
- * classes + a dynamic <style id="accessplus-dyn"> for level/colour rules.
+ * classes + a dynamic stylesheet (constructable, or <style id="accessplus-dyn">
+ * where that is unsupported) for level/colour rules.
  * Accent colour + position come from the mount point's data-* attributes.
  *
  * Comfort/display layer — never a substitute for an accessible site.
@@ -52,12 +53,28 @@
 .accessplus-panel-close:hover{background:#f2f2f2;}
 .accessplus-note{margin:0 0 10px;font-size:.78rem;color:#555;}
 .accessplus-group{margin:10px 0 4px;font-size:.85rem;font-weight:700;color:var(--accessplus-accent);border-top:1px solid #eee;padding-top:8px;}
-.accessplus-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;flex-wrap:wrap;}
-.accessplus-row > span{flex:1 1 auto;min-width:120px;}
+.accessplus-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;flex-wrap:nowrap;}
+/* The label shares the row with its control and must never push it onto a second
+   line on a narrow screen: it shrinks instead, and breaks long German compounds
+   ("Buchstabenabstand") rather than overflowing under the control. */
+.accessplus-row > span{flex:1 1 auto;min-width:0;overflow-wrap:anywhere;}
 .accessplus-panel button{font:inherit;cursor:pointer;}
 .accessplus-step button,.accessplus-align button{padding:6px 10px;border:1px solid var(--accessplus-accent);background:#fff;color:var(--accessplus-accent);border-radius:6px;}
 .accessplus-align button[aria-pressed="true"]{background:var(--accessplus-accent);color:#fff;}
 .accessplus-step,.accessplus-align{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+/* Keep the stepper intact: - value + never breaks across lines. */
+.accessplus-step{flex:0 0 auto;flex-wrap:nowrap;}
+/* Keep Links / Mitte / Rechts on one line next to their label: the group must not be
+   squeezed below the width of its three buttons, or the last one drops to a second
+   row even where there is room. On a phone the label would be crushed to a few
+   characters to make them fit, so there the buttons are allowed to wrap instead. */
+.accessplus-align{flex:0 0 auto;flex-wrap:nowrap;}
+/* Slightly tighter than the stepper buttons: the three of them plus the label have to
+   share one row, and those few pixels are what let "Textausrichtung" stay unbroken. */
+.accessplus-align button{padding-left:8px;padding-right:8px;}
+@media (max-width:480px){
+  .accessplus-align{flex:0 1 auto;flex-wrap:wrap;}
+}
 .accessplus-step output{min-width:64px;text-align:center;font-weight:700;}
 
 /* toggle switch */
@@ -81,23 +98,23 @@
   background:rgba(255,235,59,.18);border-top:2px solid rgba(0,0,0,.55);border-bottom:2px solid rgba(0,0,0,.55);display:none;}
 
 /* ── Effects ───────────────────────────────────────────────────── */
-html.accessplus-readfont body,html.accessplus-readfont p,html.accessplus-readfont li,html.accessplus-readfont a,
-html.accessplus-readfont span,html.accessplus-readfont td,html.accessplus-readfont h1,html.accessplus-readfont h2,
-html.accessplus-readfont h3,html.accessplus-readfont h4,html.accessplus-readfont h5,html.accessplus-readfont h6,
-html.accessplus-readfont label,html.accessplus-readfont button,html.accessplus-readfont input,html.accessplus-readfont textarea{
+/* Icon fonts are excluded from the selector rather than "restored" afterwards: an icon
+   element declares its own font-family, and a direct author declaration already beats
+   what these rules pass down by inheritance. Overriding the icon element and reverting
+   it cannot work — font-family is inherited, so `revert` resolves straight back to the
+   overridden value and the glyphs come out as letters. Only the tags that actually
+   carry icon classes need the exclusion. */
+html.accessplus-readfont body,html.accessplus-readfont p,html.accessplus-readfont h1,html.accessplus-readfont h2,html.accessplus-readfont h3,html.accessplus-readfont h4,html.accessplus-readfont h5,html.accessplus-readfont h6,html.accessplus-readfont input,html.accessplus-readfont textarea,html.accessplus-readfont a:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]),html.accessplus-readfont span:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]),html.accessplus-readfont li:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]),html.accessplus-readfont td:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]),html.accessplus-readfont label:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]),html.accessplus-readfont button:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]){
   font-family:Verdana,Tahoma,"Segoe UI",sans-serif !important;
 }
-html.accessplus-dysfont body,html.accessplus-dysfont p,html.accessplus-dysfont li,html.accessplus-dysfont a,
-html.accessplus-dysfont span,html.accessplus-dysfont td,html.accessplus-dysfont h1,html.accessplus-dysfont h2,
-html.accessplus-dysfont h3,html.accessplus-dysfont h4,html.accessplus-dysfont h5,html.accessplus-dysfont h6,
-html.accessplus-dysfont label,html.accessplus-dysfont button{
+html.accessplus-dysfont body,html.accessplus-dysfont p,html.accessplus-dysfont h1,html.accessplus-dysfont h2,html.accessplus-dysfont h3,html.accessplus-dysfont h4,html.accessplus-dysfont h5,html.accessplus-dysfont h6,html.accessplus-dysfont a:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]),html.accessplus-dysfont span:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]),html.accessplus-dysfont li:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]),html.accessplus-dysfont td:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]),html.accessplus-dysfont label:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]),html.accessplus-dysfont button:not(.fa):not([class*="fa-"]):not([class*="icon"]):not([class*="material-icons"]){
   font-family:"OpenDyslexic","Comic Sans MS",Verdana,sans-serif !important;letter-spacing:.03em !important;
 }
-/* restore icon fonts (Material/FontAwesome ligatures + icon elements) */
+/* Icon glyphs must not be spaced out either; the font itself is left untouched. */
 html.accessplus-readfont i,html.accessplus-readfont .fa,html.accessplus-readfont [class*="icon"],
 html.accessplus-readfont [class*="fa-"],html.accessplus-readfont [class*="material-icons"],
 html.accessplus-dysfont i,html.accessplus-dysfont .fa,html.accessplus-dysfont [class*="icon"],
-html.accessplus-dysfont [class*="fa-"],html.accessplus-dysfont [class*="material-icons"]{font-family:revert !important;letter-spacing:normal !important;}
+html.accessplus-dysfont [class*="fa-"],html.accessplus-dysfont [class*="material-icons"]{letter-spacing:normal !important;}
 
 html.accessplus-hltitles h1,html.accessplus-hltitles h2,html.accessplus-hltitles h3,
 html.accessplus-hltitles h4,html.accessplus-hltitles h5,html.accessplus-hltitles h6{
@@ -108,22 +125,43 @@ html.accessplus-hllinks a{text-decoration:underline !important;outline:1px solid
 /* Contrast modes (dark/light/highcontrast) are mutually exclusive — enforced in
    JS. Monochrome (grayscale) stacks on top. The widget lives under <html>
    (outside <body>), so `body *` rules never touch it — no need to exclude it. */
-html.accessplus-mono body{filter:grayscale(1);}
 
-/* dark = invert the page (body), then counter-invert media */
-html.accessplus-dark body{background:#fff !important;filter:invert(1) hue-rotate(180deg);}
+/* The filter goes on the ROOT element, not on <body>. A filter turns the element it
+   is set on into the containing block for position:fixed descendants, so filtering
+   <body> re-anchors every sticky header, back-to-top button and cookie banner to the
+   document instead of the viewport, and they scroll away. The document root is the
+   one element the spec exempts from that. It does mean the widget itself is rendered
+   in grey while the mode is on, which is what the mode asks for anyway. */
+html.accessplus-mono{filter:grayscale(1);}
+
+/* dark = invert the page, then counter-invert media. Filter on the ROOT element for
+   the same reason as monochrome above: filtering <body> would trap position:fixed
+   descendants. The counter-invert below still works — a child can undo a filter its
+   ancestor applied. */
+html.accessplus-dark{background:#fff !important;filter:invert(1) hue-rotate(180deg);}
 html.accessplus-dark img,html.accessplus-dark video,html.accessplus-dark picture,html.accessplus-dark iframe,
 html.accessplus-dark [style*="background-image"]{filter:invert(1) hue-rotate(180deg);}
 
 /* light = bright, high-readability: force a white background + black text on the
    WHOLE page (not just body) so theme sections with their own dark background
-   become readable too. `background` shorthand also drops background images. */
-html.accessplus-light body,html.accessplus-light body *{background:#fff !important;color:#000 !important;}
+   become readable too. `background-color`, NOT the `background` shorthand, which
+   would also reset background-image and blank out sliders and hero sections; and
+   elements that paint an image are skipped so nothing covers them. See the high
+   contrast rule below for how the two exemptions work. */
+html.accessplus-light body,
+html.accessplus-light body *:not([style*="background-image"]):not(.accessplus-has-bg){background-color:#fff !important;color:#000 !important;}
 html.accessplus-light body a{color:#0036c7 !important;}
 html.accessplus-light body img,html.accessplus-light body picture,html.accessplus-light body video,html.accessplus-light body svg{filter:none !important;}
 
-/* high contrast = classic black background, yellow text, cyan links */
-html.accessplus-highcontrast body,html.accessplus-highcontrast body *{background:#000 !important;color:#ff0 !important;border-color:#ff0 !important;}
+/* high contrast = classic black background, yellow text, cyan links.
+   `background-color`, NOT the `background` shorthand: the shorthand also resets
+   background-image, which erased sliders and hero/teaser sections. Elements that
+   actually paint an image are skipped entirely, so nothing paints over them — the
+   attribute selector catches inline background-image (what sliders rewrite as they
+   rotate) and .accessplus-has-bg is set from JS for stylesheet-applied ones, which
+   no selector can match. */
+html.accessplus-highcontrast body,
+html.accessplus-highcontrast body *:not([style*="background-image"]):not(.accessplus-has-bg){background-color:#000 !important;color:#ff0 !important;border-color:#ff0 !important;}
 html.accessplus-highcontrast body a{color:#0ff !important;}
 html.accessplus-highcontrast body img,html.accessplus-highcontrast body picture,html.accessplus-highcontrast body video{filter:none !important;}
 
